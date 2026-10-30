@@ -10,6 +10,7 @@ app.use((req, _res, next) => {
 })
 app.use(express.json())
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }))
+app.get('/api', (_req, res) => res.json("Hello from API"))
 app.listen(PORT, () => {
   console.log(`Event API listening at http://localhost:${PORT}`)
 })
