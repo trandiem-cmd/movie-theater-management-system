@@ -1,0 +1,26 @@
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #050505;
+  border-bottom: 1px solid #b88a16;
+  padding: 10px 20px;
+  gap: 20px;
+}
+
+.cinema-logo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #e5b52b;
+  text-decoration: none;
+  font-family: Georgia, serif;
+  font-size: 17px;
+  line-height: 0.9;
+  min-width: 115px;
+}
+
+.logo-icon {
+  font-size: 30px;
+}
