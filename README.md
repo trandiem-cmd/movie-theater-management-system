@@ -143,7 +143,7 @@ Use the actual connection string provided by Neon. Never commit credentials or s
 If the frontend requires a backend URL, configure it in `frontend/.env`:
 
 ```dotenv
-VITE_API_BASE_URL=http://localhost:3000
+VITE_API_BASE_URL=http://localhost:3001/api
 ```
 
 Only expose non-sensitive configuration through variables prefixed with `VITE_`.
