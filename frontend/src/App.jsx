@@ -1,14 +1,13 @@
+import ConnectionTest from "./components/ConnectionTest";
+
 function App() {
-  
   return (
-    <>
-      <section id="center">
-        <div>
-          <h1>Hello world !</h1>
-        </div>
-      </section>
-    </>
-  )
+    <div>
+      <h1>Movie Theater Management System</h1>
+
+      <ConnectionTest />
+    </div>
+  );
 }
 
-export default App
+export default App;
