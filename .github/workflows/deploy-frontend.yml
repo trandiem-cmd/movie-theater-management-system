@@ -41,7 +41,7 @@ jobs:
         working-directory: frontend
         run: npm run build
         env:
-          VITE_API_BASE_URL: movie-theater-api-ehd3e4epgqeea6ab.switzerlandnorth-01.azurewebsites.net/api
+          VITE_API_BASE_URL: https://movie-theater-api-ehd3e4epgqeea6ab.switzerlandnorth-01.azurewebsites.net/api
 
       # 5. Prepare deployment package
       - name: Prepare deployment package
