@@ -9,7 +9,12 @@ dotenv.config();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:5173' }))
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "rio-theater-frontend-aqg4hmbje5b4bagb.switzerlandnorth-01.azurewebsites.net"
+  ]
+}));
 
 // Request logger
 app.use((req, _res, next) => {
