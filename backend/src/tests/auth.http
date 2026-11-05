@@ -1,0 +1,50 @@
+
+GET http://localhost:3001/api/health
+Content-Type: application/json
+
+
+### Test Register - Success
+POST http://localhost:3001/api/auth/register
+Content-Type: application/json
+
+{
+  "full_name": "Test User",
+  "email": "testuser@example.com",
+  "password": "Test123456",
+  "phone": "0123456789",
+  "date_of_birth": "2000-05-20"
+}
+
+###
+### Test Register - Duplicate Email
+POST http://localhost:3001/api/auth/register
+Content-Type: application/json
+
+{
+  "full_name": "Test User",
+  "email": "testuser@example.com",
+  "password": "Test123456",
+  "phone": "0123456789",
+  "date_of_birth": "2000-05-20"
+}
+
+###
+### Test Register - Invalid Email
+POST http://localhost:3001/api/auth/register
+Content-Type: application/json
+
+{
+  "full_name": "Test User",
+  "email": "invalid-email",
+  "password": "Test123456"
+}
+
+###
+### Test Register - Missing Password
+POST http://localhost:3001/api/auth/register
+Content-Type: application/json
+
+{
+  "full_name": "Test User",
+  "email": "anotheruser@example.com"
+}
