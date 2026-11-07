@@ -3,6 +3,7 @@ import cors from 'cors'
 import pool from './config/database.js'
 import dotenv from "dotenv";
 import authRoutes from './routes/auth.routes.js';
+import movieRoutes from './routes/movie.routes.js';
 const app = express()
 
 // Load environment variables
@@ -43,9 +44,14 @@ app.get("/api/health", async (req, res) => {
     });
   }
 });
+
+// API routes
+app.use("/api/movies", movieRoutes);
+app.use('/api/auth', authRoutes);
+
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Event API listening at http://localhost:${PORT}`)
 })
 
-app.use('/api/auth', authRoutes);
