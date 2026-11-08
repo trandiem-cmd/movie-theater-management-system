@@ -3,6 +3,8 @@ import cors from 'cors'
 import pool from './config/database.js'
 import dotenv from "dotenv";
 import authRoutes from './routes/auth.routes.js';
+import session from 'express-session'
+import connectPgSimple from 'connect-pg-simple'
 const app = express()
 
 // Load environment variables
@@ -14,7 +16,8 @@ app.use(cors({
   origin: [
     "http://localhost:5173",
     "https://rio-theater-frontend-aqg4hmbje5b4bagb.switzerlandnorth-01.azurewebsites.net"
-  ]
+  ],
+  credentials: true,
 }));
 
 // Request logger
@@ -48,4 +51,24 @@ app.listen(PORT, () => {
   console.log(`Event API listening at http://localhost:${PORT}`)
 })
 
+const PgSession = connectPgSimple(session)
+
+const sessionStore = new PgSession({
+  pool,
+  tableName: 'user_sessions',
+  createTableIfMissing: true,
+})
+
+app.use(session({
+  store: sessionStore,
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 24 * 60 * 60 * 1000,
+  },
+}))
 app.use('/api/auth', authRoutes);
