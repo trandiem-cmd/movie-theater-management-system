@@ -84,6 +84,7 @@ CREATE TABLE wheelchair_spaces (
 
 CREATE TABLE movies (
     movie_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    tmdb_id INTEGER UNIQUE,
 
     title VARCHAR(255) NOT NULL,
     description TEXT,
@@ -93,6 +94,9 @@ CREATE TABLE movies (
     cast_members TEXT,
     language VARCHAR(100),
     age_rating VARCHAR(20),
+
+    genre TEXT[],
+    subtitles TEXT[],
 
     poster_url TEXT,
     trailer_url TEXT,
