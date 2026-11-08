@@ -67,3 +67,35 @@ export function validateRegister(input) {
 
   return { value: user }
 }
+
+export function validateLogin(input) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) {
+    return { error: 'Request body must be a JSON object' }
+  }
+
+  const credentials = {
+    email: cleanText(input.email).toLowerCase(),
+    password: input.password,
+  }
+
+  if (!credentials.email || !credentials.password) {
+    return { error: 'Email and password are required' }
+  }
+
+  if (
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.email) ||
+    credentials.email.length > 255
+  ) {
+    return { error: 'Invalid email format' }
+  }
+
+  if (typeof credentials.password !== 'string') {
+    return { error: 'Password must be a string' }
+  }
+
+  if (credentials.password.length === 0) {
+    return { error: 'Password is required' }
+  }
+
+  return { value: credentials }
+}

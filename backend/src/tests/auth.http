@@ -48,3 +48,75 @@ Content-Type: application/json
   "full_name": "Test User",
   "email": "anotheruser@example.com"
 }
+
+### Test login - Success
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "Test123456"
+}
+
+### Test login - Missing password
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": ""
+}
+
+### Test login - Missing email and password
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "",
+  "password": ""
+}
+
+### Test login - Invalid email format
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "abc",
+  "password": "Test123456"
+}
+
+### Test login - Invalid password format
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": true
+}
+
+### Test login - Invalid email
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "abc@gmail.com",
+  "password": "Test123456"
+}
+
+### Test login - Invalid password
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "123"
+}
+
+### Test get current user
+GET http://localhost:3001/api/auth/me
+
+### Test logout
+POST http://localhost:3001/api/auth/logout
+
+### Test
+GET http://localhost:3001/api/auth/protected-test
