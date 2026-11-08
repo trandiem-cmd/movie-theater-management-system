@@ -19,7 +19,7 @@ const ALLOWED_FIELDS = [
 const ALLOWED_STATUSES = ["coming_soon", "now_showing", "ended"];
 
 function cleanOptionalText(value, field, maxLength = Infinity) {
-  if (value === null || value === "") {
+  if (value === undefined || value === null || value === "") {
     return { value: null };
   }
 
@@ -37,7 +37,7 @@ function cleanOptionalText(value, field, maxLength = Infinity) {
 }
 
 function validateDate(value) {
-  if (value === null || value === "") {
+ if (value === undefined || value === null || value === "") {
     return { value: null };
   }
 
@@ -150,7 +150,7 @@ export function validateMovie(input, { partial = false } = {}) {
   if (!partial || Object.hasOwn(input, "tmdb_id")) {
     const value = input.tmdb_id;
 
-    if (value === null || value === "") {
+    if (value === undefined || value === null || value === "") {
       movie.tmdb_id = null;
     } else {
       const tmdbId = Number(value);

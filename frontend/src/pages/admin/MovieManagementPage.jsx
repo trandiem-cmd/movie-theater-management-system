@@ -1,6 +1,6 @@
 
-import { useMemo, useState } from "react";
-import Footer from "../../components/common/Footer";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   Bell,
@@ -23,105 +23,191 @@ import {
 import logo from "../../assets/rio-logo.png";
 import "./MovieManagementPage.css";
 
-const initialMovies = [
-  {
-    id: 1,
-    title: "Dune Part 3",
-    status: "Now Showing",
-  },
-  {
-    id: 2,
-    title: "The Forgotten Island",
-    status: "Coming Soon",
-  },
-  {
-    id: 3,
-    title: "Other Mommy",
-    status: "Now Showing",
-  },
-  {
-    id: 4,
-    title: "Resident Evil",
-    status: "Now Showing",
-  },
-];
+const API_URL = "/api/admin/movies";
+const PAGE_SIZE = 4;
 
 const emptyForm = {
   title: "",
-  location: "",
+  description: "",
   duration: "",
   releaseDate: "",
   ageRating: "",
-  status: "Coming Soon",
+  status: "coming_soon",
   director: "",
   genre: "",
   language: "",
   castMembers: "",
-  showtimes: "All",
+  subtitles: "",
   posterUrl: "",
   trailerUrl: "",
 };
 
+function getFormData(movie) {
+  return {
+    title: movie.title || "",
+    description: movie.description || "",
+    duration: movie.duration ?? "",
+    releaseDate: movie.release_date
+      ? String(movie.release_date).slice(0, 10)
+      : "",
+    ageRating: movie.age_rating || "",
+    status: movie.status || "coming_soon",
+    director: movie.director || "",
+    genre: Array.isArray(movie.genre)
+      ? movie.genre.join(", ")
+      : "",
+    language: movie.language || "",
+    castMembers: movie.cast_members || "",
+    subtitles: Array.isArray(movie.subtitles)
+      ? movie.subtitles.join(", ")
+      : "",
+    posterUrl: movie.poster_url || "",
+    trailerUrl: movie.trailer_url || "",
+  };
+}
+
+function getApiPayload(formData) {
+  return {
+    title: formData.title.trim(),
+    description: formData.description.trim(),
+    duration: Number(formData.duration),
+    director: formData.director.trim(),
+    cast_members: formData.castMembers.trim(),
+    language: formData.language.trim(),
+    age_rating: formData.ageRating.trim(),
+    genre: formData.genre
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean),
+    subtitles: formData.subtitles
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean),
+    poster_url: formData.posterUrl.trim(),
+    trailer_url: formData.trailerUrl.trim(),
+    release_date: formData.releaseDate || null,
+    status: formData.status,
+  };
+}
+
+function getStatusLabel(status) {
+  const labels = {
+    coming_soon: "Coming Soon",
+    now_showing: "Now Showing",
+    ended: "Ended",
+  };
+
+  return labels[status] || status;
+}
+
 function AdminMoviePage() {
-  const [movies, setMovies] = useState(initialMovies);
+  const navigate = useNavigate();
+
+  const [movies, setMovies] = useState([]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
   const [showForm, setShowForm] = useState(false);
   const [editingMovie, setEditingMovie] = useState(null);
-  const [formData, setFormData] = useState(emptyForm);
+  const [formData, setFormData] = useState({ ...emptyForm });
 
-  const pageSize = 4;
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  // Search movies
-  const filteredMovies = useMemo(
-    () =>
-      movies.filter((movie) =>
-        movie.title.toLowerCase().includes(search.toLowerCase())
-      ),
-    [movies, search]
-  );
+  // Load movies from the protected Admin API.
+  async function loadMovies() {
+    setLoading(true);
+    setError("");
 
-  // Pagination
+    try {
+      const response = await fetch(`${API_URL}?page=1&limit=100`, {
+        method: "GET",
+        credentials: "same-origin",
+      });
+
+      const data = await response.json();
+
+      if (response.status === 401) {
+        navigate("/login");
+        return;
+      }
+
+      if (response.status === 403) {
+        throw new Error("You do not have Admin permission.");
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || "Could not load movies.");
+      }
+
+      setMovies(data.data?.items || []);
+    } catch (err) {
+      setError(err.message || "Something went wrong while loading movies.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadMovies();
+  }, []);
+
+  // Search movies by title.
+  const filteredMovies = useMemo(() => {
+    return movies.filter((movie) =>
+      movie.title.toLowerCase().includes(search.toLowerCase().trim())
+    );
+  }, [movies, search]);
+
+  // Client-side pagination.
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredMovies.length / pageSize)
+    Math.ceil(filteredMovies.length / PAGE_SIZE)
   );
 
   const visibleMovies = filteredMovies.slice(
-    (page - 1) * pageSize,
-    page * pageSize
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
   );
 
-  // Movie statistics
+  // Keep the current page valid after searching or deleting.
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  // Movie statistics.
   const nowShowing = movies.filter(
-    (movie) => movie.status === "Now Showing"
+    (movie) => movie.status === "now_showing"
   ).length;
 
   const comingSoon = movies.filter(
-    (movie) => movie.status === "Coming Soon"
+    (movie) => movie.status === "coming_soon"
   ).length;
 
-  // Open empty Add Movie form
+  // Open Add Movie form.
   function openAddForm() {
+    setError("");
+    setSuccess("");
     setEditingMovie(null);
     setFormData({ ...emptyForm });
     setShowForm(true);
   }
 
-  // Open Edit Movie form
+  // Open Edit Movie form.
   function openEditForm(movie) {
+    setError("");
+    setSuccess("");
     setEditingMovie(movie);
-
-    setFormData({
-      ...emptyForm,
-      ...movie,
-    });
-
+    setFormData(getFormData(movie));
     setShowForm(true);
   }
 
-  // Update form fields
+  // Update form fields.
   function handleFormChange(event) {
     const { name, value } = event.target;
 
@@ -131,63 +217,149 @@ function AdminMoviePage() {
     }));
   }
 
-  // Save new or edited movie
-  function saveMovie(event) {
+  // Save a new movie or update an existing movie.
+  async function saveMovie(event) {
     event.preventDefault();
 
-    const movieData = {
-      ...formData,
-      title: formData.title.trim(),
-      duration: Number(formData.duration),
-    };
+    setError("");
+    setSuccess("");
 
-    if (editingMovie) {
-      setMovies((current) =>
-        current.map((movie) =>
-          movie.id === editingMovie.id
-            ? { ...movie, ...movieData }
-            : movie
-        )
-      );
-    } else {
-      const newMovie = {
-        id: Date.now(),
-        ...movieData,
-      };
-
-      setMovies((current) => [...current, newMovie]);
-      setPage(Math.ceil((movies.length + 1) / pageSize));
+    if (!formData.title.trim()) {
+      setError("Please enter a movie title.");
+      return;
     }
 
-    setShowForm(false);
-    setEditingMovie(null);
-    setFormData({ ...emptyForm });
+    if (!formData.duration || Number(formData.duration) <= 0) {
+      setError("Please enter a valid movie duration.");
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const isEditing = Boolean(editingMovie);
+
+      const url = isEditing
+        ? `${API_URL}/${editingMovie.movie_id}`
+        : API_URL;
+
+      const response = await fetch(url, {
+        method: isEditing ? "PUT" : "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(getApiPayload(formData)),
+      });
+
+      const data = await response.json();
+
+      if (response.status === 401) {
+        navigate("/login");
+        return;
+      }
+
+      if (response.status === 403) {
+        throw new Error("You do not have Admin permission.");
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || "Could not save the movie.");
+      }
+
+      await loadMovies();
+
+      setShowForm(false);
+      setEditingMovie(null);
+      setFormData({ ...emptyForm });
+      setPage(1);
+
+      setSuccess(
+        isEditing
+          ? "Movie updated successfully."
+          : "Movie added successfully."
+      );
+    } catch (err) {
+      setError(err.message || "Something went wrong while saving the movie.");
+    } finally {
+      setSaving(false);
+    }
   }
 
-  // Cancel form
+  // Cancel Add/Edit form.
   function cancelForm() {
     setShowForm(false);
     setEditingMovie(null);
     setFormData({ ...emptyForm });
+    setError("");
   }
 
-  // Delete movie
-  function deleteMovie(id) {
+  // Delete a movie.
+  async function deleteMovie(movie) {
     const confirmed = window.confirm(
-      "Are you sure you want to delete this movie?"
+      `Are you sure you want to delete "${movie.title}"?`
     );
 
-    if (confirmed) {
+    if (!confirmed) return;
+
+    setError("");
+    setSuccess("");
+    setDeletingId(movie.movie_id);
+
+    try {
+      const response = await fetch(`${API_URL}/${movie.movie_id}`, {
+        method: "DELETE",
+        credentials: "same-origin",
+      });
+
+      const data = await response.json();
+
+      if (response.status === 401) {
+        navigate("/login");
+        return;
+      }
+
+      if (response.status === 403) {
+        throw new Error("You do not have Admin permission.");
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || "Could not delete the movie.");
+      }
+
       setMovies((current) =>
-        current.filter((movie) => movie.id !== id)
+        current.filter((item) => item.movie_id !== movie.movie_id)
       );
+
+      setSuccess("Movie deleted successfully.");
       setPage(1);
+    } catch (err) {
+      setError(err.message || "Something went wrong while deleting the movie.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  // Log out using the existing session authentication.
+  async function handleLogout() {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+
+      if (!response.ok) {
+        throw new Error("Could not log out. Please try again.");
+      }
+
+      navigate("/login");
+    } catch (err) {
+      setError(err.message);
     }
   }
 
   return (
     <div className="admin-page">
-
       {/* Header */}
       <header className="admin-header">
         <img
@@ -212,7 +384,6 @@ function AdminMoviePage() {
 
       {/* Main layout */}
       <div className="admin-layout">
-
         {/* Sidebar */}
         <aside className="admin-sidebar">
           <h2>Main Menu</h2>
@@ -223,7 +394,7 @@ function AdminMoviePage() {
               Dashboard
             </a>
 
-            <a href="#" className="active">
+            <a href="/admin/movies" className="active">
               <Clapperboard />
               Movies
             </a>
@@ -249,7 +420,10 @@ function AdminMoviePage() {
             </a>
           </nav>
 
-          <button className="logout-button">
+          <button
+            className="logout-button"
+            onClick={handleLogout}
+          >
             <LogOut />
             Log out
           </button>
@@ -257,28 +431,29 @@ function AdminMoviePage() {
 
         {/* Main content */}
         <main className="admin-main">
+          {error && (
+            <p className="empty-message" role="alert">
+              {error}
+            </p>
+          )}
+
+          {success && (
+            <p className="empty-message" role="status">
+              {success}
+            </p>
+          )}
 
           {showForm ? (
-
-            /* =========================
-               ADD / EDIT MOVIE FORM
-            ========================= */
-
+            /* Add / Edit Movie Form */
             <section className="add-movie-form-container">
-
               <h2>
-                {editingMovie
-                  ? "Edit Movie"
-                  : "Add New Movie"}
+                {editingMovie ? "Edit Movie" : "Add New Movie"}
               </h2>
 
               <form onSubmit={saveMovie}>
-
                 <div className="form-grid">
-
                   {/* Left column */}
                   <div className="form-column">
-
                     <div className="form-group">
                       <label>
                         Movie Title<span>*</span>
@@ -287,6 +462,7 @@ function AdminMoviePage() {
                       <input
                         type="text"
                         name="title"
+                        maxLength="255"
                         value={formData.title}
                         onChange={handleFormChange}
                         required
@@ -302,6 +478,7 @@ function AdminMoviePage() {
                         type="number"
                         name="duration"
                         min="1"
+                        step="1"
                         value={formData.duration}
                         onChange={handleFormChange}
                         required
@@ -315,6 +492,7 @@ function AdminMoviePage() {
                         type="text"
                         name="ageRating"
                         placeholder="e.g. 12+"
+                        maxLength="20"
                         value={formData.ageRating}
                         onChange={handleFormChange}
                       />
@@ -326,6 +504,7 @@ function AdminMoviePage() {
                       <input
                         type="text"
                         name="director"
+                        maxLength="150"
                         value={formData.director}
                         onChange={handleFormChange}
                       />
@@ -334,21 +513,13 @@ function AdminMoviePage() {
                     <div className="form-group">
                       <label>Genre</label>
 
-                      <select
+                      <input
+                        type="text"
                         name="genre"
+                        placeholder="e.g. Action, Drama, Comedy"
                         value={formData.genre}
                         onChange={handleFormChange}
-                      >
-                        <option value="">Select genre</option>
-                        <option value="Action">Action</option>
-                        <option value="Adventure">Adventure</option>
-                        <option value="Comedy">Comedy</option>
-                        <option value="Drama">Drama</option>
-                        <option value="Horror">Horror</option>
-                        <option value="Romance">Romance</option>
-                        <option value="Sci-Fi">Sci-Fi</option>
-                        <option value="Thriller">Thriller</option>
-                      </select>
+                      />
                     </div>
 
                     <div className="form-group">
@@ -364,38 +535,20 @@ function AdminMoviePage() {
                     </div>
 
                     <div className="form-group">
-                      <label>Poster URL</label>
+                      <label>Description</label>
 
                       <input
-                        type="url"
-                        name="posterUrl"
-                        value={formData.posterUrl}
+                        type="text"
+                        name="description"
+                        placeholder="Short movie description"
+                        value={formData.description}
                         onChange={handleFormChange}
                       />
                     </div>
-
                   </div>
 
                   {/* Right column */}
                   <div className="form-column">
-
-                    <div className="form-group">
-                      <label>Location</label>
-
-                      <select
-                        name="location"
-                        value={formData.location}
-                        onChange={handleFormChange}
-                      >
-                        <option value="">
-                          Select location
-                        </option>
-
-                        <option value="Oulu">Oulu</option>
-                        <option value="Tampere">Tampere</option>
-                      </select>
-                    </div>
-
                     <div className="form-group">
                       <label>Release date</label>
 
@@ -415,12 +568,16 @@ function AdminMoviePage() {
                         value={formData.status}
                         onChange={handleFormChange}
                       >
-                        <option value="Coming Soon">
+                        <option value="coming_soon">
                           Coming Soon
                         </option>
 
-                        <option value="Now Showing">
+                        <option value="now_showing">
                           Now Showing
+                        </option>
+
+                        <option value="ended">
+                          Ended
                         </option>
                       </select>
                     </div>
@@ -431,21 +588,33 @@ function AdminMoviePage() {
                       <input
                         type="text"
                         name="language"
+                        maxLength="100"
                         value={formData.language}
                         onChange={handleFormChange}
                       />
                     </div>
 
                     <div className="form-group">
-                      <label>Showtimes</label>
+                      <label>Subtitles</label>
 
-                      <select
-                        name="showtimes"
-                        value={formData.showtimes}
+                      <input
+                        type="text"
+                        name="subtitles"
+                        placeholder="e.g. English, Finnish"
+                        value={formData.subtitles}
                         onChange={handleFormChange}
-                      >
-                        <option value="All">All</option>
-                      </select>
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Poster URL</label>
+
+                      <input
+                        type="url"
+                        name="posterUrl"
+                        value={formData.posterUrl}
+                        onChange={handleFormChange}
+                      />
                     </div>
 
                     <div className="form-group">
@@ -458,17 +627,16 @@ function AdminMoviePage() {
                         onChange={handleFormChange}
                       />
                     </div>
-
                   </div>
                 </div>
 
                 {/* Form buttons */}
                 <div className="form-buttons">
-
                   <button
                     type="button"
                     className="cancel-button"
                     onClick={cancelForm}
+                    disabled={saving}
                   >
                     Cancel
                   </button>
@@ -476,23 +644,19 @@ function AdminMoviePage() {
                   <button
                     type="submit"
                     className="save-button"
+                    disabled={saving}
                   >
-                    {editingMovie
-                      ? "Update Movie"
-                      : "Save Movie"}
+                    {saving
+                      ? "Saving..."
+                      : editingMovie
+                        ? "Update Movie"
+                        : "Save Movie"}
                   </button>
-
                 </div>
-
               </form>
             </section>
-
           ) : (
-
-            /* =========================
-               MOVIE MANAGEMENT LIST
-            ========================= */
-
+            /* Movie Management List */
             <>
               <div className="page-actions">
                 <button
@@ -506,7 +670,6 @@ function AdminMoviePage() {
 
               {/* Summary cards */}
               <section className="summary-cards">
-
                 <div className="summary-card">
                   <strong>{movies.length}</strong>
                   <span>Total Movies</span>
@@ -521,7 +684,6 @@ function AdminMoviePage() {
                   <strong>{comingSoon}</strong>
                   <span>Coming Soon</span>
                 </div>
-
               </section>
 
               {/* Search */}
@@ -541,12 +703,9 @@ function AdminMoviePage() {
 
               {/* Pagination */}
               <div className="pagination">
-
                 <button
                   onClick={() =>
-                    setPage((current) =>
-                      Math.max(1, current - 1)
-                    )
+                    setPage((current) => Math.max(1, current - 1))
                   }
                   disabled={page === 1}
                   aria-label="Previous page"
@@ -569,29 +728,26 @@ function AdminMoviePage() {
                 >
                   <ChevronRight />
                 </button>
-
               </div>
 
               {/* Movie list */}
               <section className="movie-list">
-
                 <h2>Movie List</h2>
 
-                {visibleMovies.length === 0 ? (
-
+                {loading ? (
+                  <p className="empty-message">
+                    Loading movies...
+                  </p>
+                ) : visibleMovies.length === 0 ? (
                   <p className="empty-message">
                     No movies found.
                   </p>
-
                 ) : (
-
                   visibleMovies.map((movie) => (
-
                     <div
                       className="movie-row"
-                      key={movie.id}
+                      key={movie.movie_id}
                     >
-
                       <div className="movie-name">
                         <Clapperboard size={23} />
                         <span>{movie.title}</span>
@@ -599,16 +755,15 @@ function AdminMoviePage() {
 
                       <span
                         className={`movie-status ${
-                          movie.status === "Coming Soon"
+                          movie.status === "coming_soon"
                             ? "coming-soon"
                             : ""
                         }`}
                       >
-                        {movie.status}
+                        {getStatusLabel(movie.status)}
                       </span>
 
                       <div className="movie-actions">
-
                         <button
                           onClick={() => openEditForm(movie)}
                           aria-label={`Edit ${movie.title}`}
@@ -617,22 +772,19 @@ function AdminMoviePage() {
                         </button>
 
                         <button
-                          onClick={() => deleteMovie(movie.id)}
+                          onClick={() => deleteMovie(movie)}
                           aria-label={`Delete ${movie.title}`}
+                          disabled={deletingId === movie.movie_id}
                         >
                           <Trash2 size={17} />
                         </button>
-
                       </div>
                     </div>
-
                   ))
                 )}
-
               </section>
             </>
           )}
-
         </main>
       </div>
     </div>

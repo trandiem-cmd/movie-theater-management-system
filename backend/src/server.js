@@ -8,7 +8,7 @@ import connectPgSimple from "connect-pg-simple";
 import pool from "./config/database.js";
 import authRoutes from "./routes/auth.routes.js";
 import movieRoutes from "./routes/movie.routes.js";
-
+import adminRoutes from "./routes/admin.routes.js";
 dotenv.config();
 
 const app = express();
@@ -96,6 +96,7 @@ app.get("/api/health", async (_req, res) => {
 // API routes
 app.use("/api/movies", movieRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Start server
 app.listen(PORT, () => {
