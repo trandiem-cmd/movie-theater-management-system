@@ -6,6 +6,7 @@ import Footer from "./components/common/Footer";
 import HomePage from "./pages/customer/HomePage";
 import MovieListPage from "./pages/customer/MovieListPage";
 import MovieDetailPage from "./pages/customer/MovieDetailPage";
+import LoginPage from "./pages/auth/LoginPage";
 import "./App.css";
 
 
@@ -19,6 +20,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/movies" element={<MovieListPage />} />
           <Route path="/movies/:id" element={<MovieDetailPage />} />
+          <Route path="/login" element={<LoginPage />} />
         </Routes>
       </main>
 
