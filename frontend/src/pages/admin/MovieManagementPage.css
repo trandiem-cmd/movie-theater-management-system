@@ -1,0 +1,612 @@
+
+/* ========================================
+   GLOBAL STYLES
+======================================== */
+
+.admin-page {
+  background: #000;
+  color: #e6e0e0;
+  font-family: Georgia, "Times New Roman", serif;
+  width: 100%;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+/* ========================================
+   HEADER
+======================================== */
+
+.admin-header {
+  height: 70px;
+  border-bottom: 1px solid #a98200;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 30px;
+  background: #000;
+}
+
+.admin-logo {
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+}
+
+.header-title {
+  flex: 1;
+  color: #d6a32c;
+  font-size: 23px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  color: #d6a32c;
+}
+
+.admin-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 13px;
+}
+
+/* ========================================
+   MAIN LAYOUT
+======================================== */
+
+.admin-layout {
+  display: flex;
+  min-height: 650px;
+}
+
+/* ========================================
+   SIDEBAR
+======================================== */
+
+.admin-sidebar {
+  width: 230px;
+  flex-shrink: 0;
+  background: linear-gradient(#171717, #050505);
+  border-right: 1px solid #a98200;
+  padding: 25px 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-sidebar h2 {
+  color: #d6a32c;
+  font-size: 21px;
+  font-weight: normal;
+  margin: 0 0 25px;
+}
+
+.sidebar-links {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sidebar-links a {
+  color: #ddd;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+}
+
+.sidebar-links a svg,
+.logout-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.sidebar-links a:hover,
+.sidebar-links a.active {
+  color: #d6a32c;
+}
+
+.logout-button {
+  margin-top: auto;
+  background: none;
+  border: none;
+  color: #ddd;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.logout-button:hover {
+  color: #d6a32c;
+}
+
+/* ========================================
+   MAIN CONTENT
+======================================== */
+
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  padding: 35px 30px 30px;
+}
+
+/* Add Movie button */
+
+.page-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 55px;
+}
+
+.add-movie-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 13px;
+  background: #080808;
+  border: 1px solid #b58b00;
+  color: #d6a32c;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.add-movie-button:hover {
+  background: #28200c;
+}
+
+/* ========================================
+   SUMMARY CARDS
+======================================== */
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 25px;
+  max-width: 850px;
+  margin-bottom: 25px;
+}
+
+.summary-card {
+  height: 125px;
+  border: 1px solid #a98200;
+  border-radius: 8px;
+  background: linear-gradient(#181818, #050505);
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.summary-card strong {
+  font-size: 29px;
+  font-weight: normal;
+  color: #d6a32c;
+}
+
+.summary-card span {
+  font-size: 16px;
+}
+
+/* ========================================
+   SEARCH
+======================================== */
+
+.movie-search {
+  height: 45px;
+  border: 1px solid #a98200;
+  border-radius: 30px;
+  background: linear-gradient(#171717, #050505);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 0 20px;
+  color: #d6a32c;
+  margin-bottom: 12px;
+}
+
+.movie-search input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 15px;
+}
+
+.movie-search input::placeholder {
+  color: #d6a32c;
+}
+
+/* ========================================
+   PAGINATION
+======================================== */
+
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: #d6a32c;
+}
+
+.pagination button {
+  width: 29px;
+  height: 29px;
+  border: 1px solid #a98200;
+  border-radius: 50%;
+  background: #080808;
+  color: #d6a32c;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #332800;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination button svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* ========================================
+   MOVIE LIST
+======================================== */
+
+.movie-list {
+  border: 1px solid #a98200;
+  border-radius: 8px;
+  background: linear-gradient(#171717, #050505);
+  overflow: hidden;
+  min-height: 270px;
+}
+
+.movie-list h2 {
+  color: #d6a32c;
+  font-size: 19px;
+  font-weight: normal;
+  padding: 14px 12px 8px;
+  margin: 0;
+}
+
+.movie-row {
+  min-height: 55px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #765b00;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.movie-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  font-size: 16px;
+}
+
+.movie-name svg {
+  color: #d6a32c;
+  flex-shrink: 0;
+}
+
+.movie-status {
+  width: 130px;
+  text-align: center;
+  color: #d6a32c;
+  font-size: 14px;
+}
+
+.movie-status.coming-soon {
+  color: #e32626;
+}
+
+.movie-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.movie-actions button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #765b00;
+  background: #080808;
+  color: #d6a32c;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.movie-actions button:hover {
+  background: #332800;
+}
+
+.empty-message {
+  padding: 20px;
+  color: #aaa;
+}
+
+/* ========================================
+   ADD / EDIT MOVIE FORM
+======================================== */
+
+.add-movie-form-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  background: linear-gradient(#181818, #050505);
+  border: 1px solid #a98200;
+  border-radius: 10px;
+}
+
+.add-movie-form-container h2 {
+  color: #d6a32c;
+  font-size: 22px;
+  font-weight: normal;
+  margin: 0 0 24px;
+}
+
+/* Two-column form */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 45px;
+}
+
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  color: #e5e0e0;
+  font-size: 15px;
+}
+
+.form-group label span {
+  color: #e32626;
+  margin-left: 2px;
+}
+
+/* Input fields */
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  max-width: 260px;
+  height: 39px;
+  padding: 0 13px;
+  border: 1px solid #a98200;
+  border-radius: 25px;
+  outline: none;
+  background: linear-gradient(#222, #080808);
+  color: white;
+  font-size: 14px;
+}
+
+.form-group input::placeholder {
+  color: #999;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #e2b83f;
+  box-shadow: 0 0 5px #a98200;
+}
+
+.form-group select {
+  cursor: pointer;
+}
+
+.form-group select option {
+  background: #171717;
+  color: white;
+}
+
+/* Date input */
+
+.form-group input[type="date"] {
+  color-scheme: dark;
+}
+
+/* Form buttons */
+
+.form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.cancel-button,
+.save-button {
+  min-width: 115px;
+  height: 40px;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cancel-button {
+  color: #ddd;
+  background: #080808;
+  border: 1px solid #a98200;
+}
+
+.save-button {
+  color: #080808;
+  background: #c69a00;
+  border: 1px solid #c69a00;
+  font-weight: bold;
+}
+
+.cancel-button:hover {
+  background: #252525;
+}
+
+.save-button:hover {
+  background: #e0b52e;
+}
+
+/* ========================================
+   RESPONSIVE: TABLETS
+======================================== */
+
+@media (max-width: 800px) {
+  .admin-sidebar {
+    width: 170px;
+    padding: 20px 15px;
+  }
+
+  .admin-main {
+    padding: 25px 15px;
+  }
+
+  .summary-cards {
+    gap: 10px;
+  }
+
+  .form-grid {
+    gap: 20px;
+  }
+
+  .admin-footer {
+    flex-wrap: wrap;
+  }
+}
+
+/* ========================================
+   RESPONSIVE: MOBILE
+======================================== */
+
+@media (max-width: 550px) {
+  .admin-header {
+    gap: 12px;
+    padding: 0 10px;
+  }
+
+  .header-title {
+    font-size: 17px;
+  }
+
+  .header-actions {
+    gap: 12px;
+  }
+
+  .admin-layout {
+    flex-direction: column;
+  }
+
+  .admin-sidebar {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .admin-sidebar h2,
+  .logout-button {
+    display: none;
+  }
+
+  .sidebar-links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .sidebar-links a {
+    font-size: 12px;
+  }
+
+  .admin-main {
+    padding: 20px 12px;
+  }
+
+  .page-actions {
+    margin-bottom: 25px;
+  }
+
+  .summary-cards {
+    gap: 8px;
+  }
+
+  .summary-card {
+    height: 100px;
+    padding: 10px;
+  }
+
+  .summary-card strong {
+    font-size: 22px;
+  }
+
+  .summary-card span {
+    font-size: 12px;
+  }
+
+  .movie-row {
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  .movie-name {
+    font-size: 13px;
+  }
+
+  .movie-status {
+    width: auto;
+    font-size: 12px;
+  }
+
+  /* Form on mobile */
+
+  .add-movie-form-container {
+    padding: 15px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .form-group input,
+  .form-group select {
+    max-width: 100%;
+  }
+
+  .form-buttons {
+    flex-wrap: wrap;
+  }
+
+  .cancel-button,
+  .save-button {
+    flex: 1;
+  }
+}
