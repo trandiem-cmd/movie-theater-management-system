@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./LoginPage.css";
-
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import {login} from "../../api.js";
 function LoginPage() {
   const navigate = useNavigate();
 
@@ -18,26 +19,14 @@ function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
+      const data = await login(email, password);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed.");
-      }
-
-      // Login successful
-      navigate("/");
+    // Redirect based on the user's role
+    if (data.user?.role === "admin") {
+    navigate("/admin/movies");
+    } else {
+    navigate("/");
+    }
       
     } catch (err) {
       setError(err.message);

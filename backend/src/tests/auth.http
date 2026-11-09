@@ -8,8 +8,8 @@ POST http://localhost:3001/api/auth/register
 Content-Type: application/json
 
 {
-  "full_name": "Test User",
-  "email": "testuser@example.com",
+  "full_name": "Test User3",
+  "email": "testuser2@example.com",
   "password": "Test123456",
   "phone": "0123456789",
   "date_of_birth": "2000-05-20"
@@ -54,7 +54,7 @@ POST http://localhost:3001/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "testuser@example.com",
+  "email": "testuser2@example.com",
   "password": "Test123456"
 }
 

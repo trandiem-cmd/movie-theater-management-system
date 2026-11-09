@@ -9,6 +9,7 @@ import pool from "./config/database.js";
 import authRoutes from "./routes/auth.routes.js";
 import movieRoutes from "./routes/movie.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+
 dotenv.config();
 
 const app = express();
