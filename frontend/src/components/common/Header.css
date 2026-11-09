@@ -1,14 +1,24 @@
 
 .site-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  position: relative;
+  width: 100%;
   background: #050505;
-  border-bottom: 1px solid #b88a16;
-  padding: 10px 20px;
-  gap: 20px;
 }
+.site-header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
 
+  width: min(
+    var(--content-max-width),
+    calc(100% - 48px)
+  );
+
+  height: 1px;
+  background: #b88a16;
+}
 .cinema-logo {
   display: flex;
   align-items: center;

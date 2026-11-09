@@ -13,6 +13,27 @@ export const testBackendConnection = async () => {
 };
 
 // Auth
+export const login = async (email, password) => {
+  const response = await fetch(`${BASE_URL}/auth/login`, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Login failed.");
+  }
+
+  return data;
+};
 // Movies
 // Theaters
 // Showtimes
