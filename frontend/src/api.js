@@ -105,6 +105,56 @@ export const logout = async () => {
   return data;
 };
 
+// Update Profile
+export const updateProfile = async (profileData) => {
+  const response = await fetch(`${BASE_URL}/auth/profile`, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      full_name: profileData.full_name,
+      phone: profileData.phone,
+      date_of_birth: profileData.date_of_birth,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Profile update failed.");
+  }
+
+  return data;
+};
+// Change Password
+export const changePassword = async (
+  currentPassword,
+  newPassword,
+  confirmPassword
+) => {
+  const response = await fetch(`${BASE_URL}/auth/change-password`, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      current_password: currentPassword,
+      new_password: newPassword,
+      confirm_password: confirmPassword,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Password change failed.");
+  }
+
+  return data;
+};
 // Movies
 // Theaters
 // Showtimes
