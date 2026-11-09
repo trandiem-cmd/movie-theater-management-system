@@ -1,11 +1,15 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
+import { login } from "../../api.js";
+import { useAuth } from "../../context/AuthContext";
+
 import "./LoginPage.css";
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-import {login} from "../../api.js";
+
 function LoginPage() {
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,11 +23,22 @@ function LoginPage() {
     setLoading(true);
 
     try {
+      // 1. Gửi thông tin đăng nhập đến Backend
       await login(email, password);
 
-      // Login successful
-      navigate("/");
-      
+      // 2. Cập nhật user trong AuthContext
+      const currentUser = await refreshUser();
+
+      // 3. Kiểm tra session
+      if (!currentUser) {
+        throw new Error(
+          "Login successful, but session could not be verified."
+        );
+      }
+
+      // 4. Chuyển về trang chủ
+      navigate("/", { replace: true });
+
     } catch (err) {
       setError(err.message);
     } finally {
@@ -36,6 +51,7 @@ function LoginPage() {
       <div className="login-container">
 
         <h1>Welcome back!</h1>
+
         <p className="login-subtitle">
           Sign in to your account
         </p>
@@ -78,6 +94,7 @@ function LoginPage() {
 
           <div className="register-prompt">
             <span>New to RIO?</span>
+
             <Link to="/register">
               Create an account
             </Link>

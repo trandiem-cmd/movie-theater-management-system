@@ -93,9 +93,16 @@ export async function login(req, res) {
 
     // 2. Find user by email
     const result = await pool.query(
-      `SELECT user_id, full_name, email, password_hash, role
-       FROM users
-       WHERE email = $1`,
+      `SELECT
+        user_id,
+        full_name,
+        email,
+        password_hash,
+        role,
+        phone,
+        date_of_birth
+      FROM users
+      WHERE email = $1`,
       [email]
     )
 
@@ -133,6 +140,8 @@ export async function login(req, res) {
       full_name: user.full_name,
       email: user.email,
       role: user.role,
+      phone: user.phone,
+      date_of_birth: user.date_of_birth
     }
     // 6. Save session before responding
     await new Promise((resolve, reject) => {

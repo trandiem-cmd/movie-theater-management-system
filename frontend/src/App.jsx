@@ -8,7 +8,10 @@ import MovieListPage from "./pages/customer/MovieListPage";
 import MovieDetailPage from "./pages/customer/MovieDetailPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
+import ProtectedRoute from "./components/common/ProtectedRoute";
+import ProfilePage from "./pages/customer/ProfilePage";
 import "./App.css";
+import { Omega } from "lucide-react";
 
 
 function App() {
@@ -23,6 +26,9 @@ function App() {
           <Route path="/movies/:id" element={<MovieDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/profile" element={<ProfilePage />} />
+          </Route>
         </Routes>
       </main>
 

@@ -13,10 +13,19 @@ export const testBackendConnection = async () => {
 };
 
 // Auth
+const handleResponse = async (response, defaultMessage) => {
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || defaultMessage);
+  }
+
+  return data;
+};
 export const login = async (email, password) => {
   const response = await fetch(`${BASE_URL}/auth/login`, {
     method: "POST",
-    credentials: "same-origin",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
@@ -65,6 +74,37 @@ export const register = async (
 
   return data;
 };
+
+export const getCurrentUser = async () => {
+  const response = await fetch(`${BASE_URL}/auth/me`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Not authenticated");
+  }
+
+  return data.user;
+};
+
+export const logout = async () => {
+  const response = await fetch(`${BASE_URL}/auth/logout`, {
+    method: "POST",
+    credentials: "same-origin",
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Logout failed.");
+  }
+
+  return data;
+};
+
 // Movies
 // Theaters
 // Showtimes
