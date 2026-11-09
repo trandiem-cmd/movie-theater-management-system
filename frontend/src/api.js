@@ -155,6 +155,72 @@ export const changePassword = async (
 
   return data;
 };
+export const forgotPassword = async (email) => {
+  const response = await fetch(`${BASE_URL}/auth/forgot-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to send OTP.");
+  }
+
+  return data;
+};
+
+export const verifyResetOtp = async (email, otp) => {
+  const response = await fetch(`${BASE_URL}/auth/verify-reset-otp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      otp,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "OTP verification failed.");
+  }
+
+  return data;
+};
+
+export const resetPassword = async (
+  email,
+  otp,
+  newPassword,
+  confirmPassword
+) => {
+  const response = await fetch(`${BASE_URL}/auth/reset-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      otp,
+      new_password: newPassword,
+      confirm_password: confirmPassword,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Password reset failed.");
+  }
+
+  return data;
+};
 // Movies
 // Theaters
 // Showtimes

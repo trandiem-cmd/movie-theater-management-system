@@ -196,3 +196,110 @@ export function validateChangePassword(input) {
     },
   };
 }
+
+
+export function validateForgotPassword(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return { error: "Request body must be a JSON object" };
+  }
+
+  const email = cleanText(input.email).toLowerCase();
+
+  if (!email) {
+    return { error: "Email is required" };
+  }
+
+  if (
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+    email.length > 255
+  ) {
+    return { error: "Invalid email format" };
+  }
+
+  return {
+    value: { email },
+  };
+}
+
+export function validateVerifyResetOtp(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return { error: "Request body must be a JSON object" };
+  }
+
+  const email = cleanText(input.email).toLowerCase();
+  const otp = input.otp;
+
+  if (!email || !otp) {
+    return { error: "Email and OTP are required" };
+  }
+
+  if (
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+    email.length > 255
+  ) {
+    return { error: "Invalid email format" };
+  }
+
+  if (typeof otp !== "string" || !/^\d{6}$/.test(otp)) {
+    return { error: "OTP must be exactly 6 digits" };
+  }
+
+  return {
+    value: { email, otp },
+  };
+}
+
+export function validateResetPassword(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return { error: "Request body must be a JSON object" };
+  }
+
+  const email = cleanText(input.email).toLowerCase();
+  const otp = input.otp;
+  const new_password = input.new_password;
+  const confirm_password = input.confirm_password;
+
+  if (!email || !otp || !new_password || !confirm_password) {
+    return {
+      error: "All fields are required",
+    };
+  }
+
+  if (
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+    email.length > 255
+  ) {
+    return { error: "Invalid email format" };
+  }
+
+  if (typeof otp !== "string" || !/^\d{6}$/.test(otp)) {
+    return { error: "OTP must be exactly 6 digits" };
+  }
+
+  if (
+    typeof new_password !== "string" ||
+    typeof confirm_password !== "string"
+  ) {
+    return { error: "Passwords must be strings" };
+  }
+
+  if (new_password.length < 8) {
+    return {
+      error: "Password must be at least 8 characters",
+    };
+  }
+
+  if (new_password !== confirm_password) {
+    return {
+      error: "Password and confirm password do not match",
+    };
+  }
+
+  return {
+    value: {
+      email,
+      otp,
+      new_password,
+    },
+  };
+}
