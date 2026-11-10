@@ -23,22 +23,27 @@ function LoginPage() {
     setLoading(true);
 
     try {
-      // 1. Gửi thông tin đăng nhập đến Backend
-      await login(email, password);
+      // 1. Send login details to the backend
+      const data = await login(email, password);
 
-      // 2. Cập nhật user trong AuthContext
+      // 2. Refresh the authenticated user in AuthContext
       const currentUser = await refreshUser();
 
-      // 3. Kiểm tra session
-      if (!currentUser) {
+      // 3. Verify that the session exists
+      const user = currentUser || data.user;
+
+      if (!user) {
         throw new Error(
           "Login successful, but session could not be verified."
         );
       }
 
-      // 4. Chuyển về trang chủ
-      navigate("/", { replace: true });
-
+      // 4. Redirect according to the user's role
+      if (user.role === "admin") {
+        navigate("/admin/movies", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -49,7 +54,6 @@ function LoginPage() {
   return (
     <div className="login-page">
       <div className="login-container">
-
         <h1>Welcome back!</h1>
 
         <p className="login-subtitle">
@@ -57,7 +61,6 @@ function LoginPage() {
         </p>
 
         <form onSubmit={handleSubmit}>
-
           <div className="login-field">
             <label htmlFor="email">Email</label>
 
@@ -107,7 +110,6 @@ function LoginPage() {
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>
-
         </form>
       </div>
     </div>
