@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import logo from "../../assets/rio-logo.png";
 import { UserRound, Search } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import "./Navbar.css";
 
@@ -11,9 +11,14 @@ function Navbar() {
 
   const [showMenu, setShowMenu] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const accountRef = useRef(null);
 
-  
+  // Detect whether an Admin is viewing an admin page
+  const isAdminPage =
+    user?.role === "admin" &&
+    location.pathname.startsWith("/admin");
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -31,7 +36,6 @@ function Navbar() {
     };
   }, []);
 
- 
   async function handleLogout() {
     try {
       await logout();
@@ -44,33 +48,37 @@ function Navbar() {
   }
 
   return (
-    <nav className="navbar">
+    <nav className={`navbar ${isAdminPage ? "admin-navbar" : ""}`}>
       <div className="navbar-inner">
 
         <div className="navbar-left">
           <div className="navbar-logo">
-            <Link to="/">
+            <Link to={isAdminPage ? "/admin/movies" : "/"}>
               <img src={logo} alt="RIO Cinema Logo" />
             </Link>
           </div>
 
-          <div className="nav-links">
-            <Link to="/movies">Films</Link>
-            <Link to="/showtimes">Cinema Showtimes</Link>
-            <Link to="/experience">Experience</Link>
-          </div>
+          {!isAdminPage && (
+            <div className="nav-links">
+              <Link to="/movies">Films</Link>
+              <Link to="/showtimes">Cinema Showtimes</Link>
+              <Link to="/experience">Experience</Link>
+            </div>
+          )}
         </div>
 
         <div className="nav-actions">
 
-          <div className="search-container">
-            <input
-              type="text"
-              placeholder="Search"
-              className="search-input"
-            />
-            <Search className="search-icon" size={20} />
-          </div>
+          {!isAdminPage && (
+            <div className="search-container">
+              <input
+                type="text"
+                placeholder="Search"
+                className="search-input"
+              />
+              <Search className="search-icon" size={20} />
+            </div>
+          )}
 
           {!authLoading && (
             <div className="account-container" ref={accountRef}>
