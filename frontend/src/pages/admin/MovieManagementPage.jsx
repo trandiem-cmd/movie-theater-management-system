@@ -486,16 +486,19 @@ function AdminMoviePage() {
                     </div>
 
                     <div className="form-group">
-                      <label>Age rating</label>
+                    <label>Age Rating</label>
 
-                      <input
-                        type="text"
+                     <select
                         name="ageRating"
-                        placeholder="e.g. 12+"
-                        maxLength="20"
                         value={formData.ageRating}
                         onChange={handleFormChange}
-                      />
+                        >
+                        <option value="">Select age rating</option>
+                        <option value="S">S - Suitable for all ages</option>
+                        <option value="7">7 - Age 7 and above</option>
+                        <option value="12">12 - Age 12 and above</option>
+                        <option value="16">16 - Age 16 and above</option>
+                     </select>
                     </div>
 
                     <div className="form-group">

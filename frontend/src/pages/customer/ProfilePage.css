@@ -1,0 +1,171 @@
+.profile-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 70vh;
+  padding: 40px 15px;
+  background-color: #000;
+  box-sizing: border-box;
+}
+
+.profile-container {
+  width: 100%;
+  max-width: 500px;
+  padding: 25px 35px;
+  border: 1px solid #383838;
+  border-radius: 15px;
+  background-color: #000;
+  box-sizing: border-box;
+}
+
+.profile-container h1 {
+  margin: 10px 0;
+  color: #b88a16;
+  text-align: center;
+  font-family: Georgia, serif;
+  font-size: 22px;
+}
+
+.profile-subtitle {
+  margin-bottom: 30px;
+  color: #b88a16;
+  text-align: center;
+  font-family: Georgia, serif;
+  font-size: 12px;
+}
+
+.profile-field {
+  margin-bottom: 20px;
+}
+
+.profile-field label {
+  display: block;
+  margin-bottom: 8px;
+  color: #b88a16;
+  font-family: Georgia, serif;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.profile-field p {
+  margin: 0;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: #d6d2d2;
+  color: #000;
+  font-family: Georgia, serif;
+  font-size: 13px;
+}
+
+@media (max-width: 480px) {
+  .profile-container {
+    padding: 20px;
+  }
+}
+.profile-field input {
+  width: 100%;
+  padding: 10px 10px;
+  margin-top: 0px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 13px;
+  box-sizing: border-box;
+  background-color: #d6d2d2;
+}
+
+.profile-actions {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 24px;
+}
+
+.profile-actions button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background-color:#b88a16;
+}
+
+.profile-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.profile-error {
+  color: #d32f2f;
+  margin: 12px 0;
+}
+
+.profile-success {
+  color: #2e7d32;
+  margin: 12px 0;
+  font-size: 11px;
+}
+
+.profile-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.profile-header h1 {
+  margin: 0;
+}
+
+.edit-profile-btn {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  border: none;
+  color: #555;
+  cursor: pointer;
+  padding: 8px;
+}
+
+
+.edit-profile-btn:hover {
+  color: #d4a017;
+}
+
+.password-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #ddd;
+}
+
+.password-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.password-header > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.password-header h2 {
+  font-size: 15px;
+  margin: 0;
+}
+
+.password-header button {
+  padding: 6px 6px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #b88a16;
+}
