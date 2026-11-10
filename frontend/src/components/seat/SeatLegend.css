@@ -1,0 +1,85 @@
+
+.seat-legend {
+  width: 220px;
+  flex-shrink: 0;
+  padding: 15px;
+  border: 1px solid #c89b22;
+  border-radius: 10px;
+  background: #050505;
+  color: #f5f0e6;
+}
+
+.seat-legend h3 {
+  margin: 0 0 14px;
+  font-size: 17px;
+  color: #e2b532;
+}
+
+.seat-legend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.seat-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.seat-legend-chair {
+  width: 34px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 6px 6px 4px 4px;
+}
+
+.seat-legend-item strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #f5f0e6;
+}
+
+.seat-legend-item small {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  color: #aaa;
+}
+
+.seat-room-rules {
+  border: none;
+  border-top: 1px solid #b58b1d;
+  padding: 14px 0 0;
+  margin-top: 18px;
+}
+
+.seat-room-rules h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.seat-room-rules ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.seat-room-rules li {
+  font-size: 11px;
+  line-height: 1.7;
+  margin-bottom: 5px;
+  color: #ddd;
+}
+.seat-legend {
+  margin-top: 90px;
+}

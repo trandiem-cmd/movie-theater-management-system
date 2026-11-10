@@ -9,6 +9,7 @@ import pool from "./config/database.js";
 import authRoutes from "./routes/auth.routes.js";
 import movieRoutes from "./routes/movie.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import seatRoutes from "./routes/seat.routes.js";
 
 dotenv.config();
 
@@ -96,8 +97,11 @@ app.get("/api/health", async (_req, res) => {
 
 // API routes
 app.use("/api/movies", movieRoutes);
+
+
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/rooms", seatRoutes);
 
 // Start server
 app.listen(PORT, () => {

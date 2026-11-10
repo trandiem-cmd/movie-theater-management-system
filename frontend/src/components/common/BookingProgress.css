@@ -1,0 +1,76 @@
+
+.booking-progress {
+  width: 100%;
+  max-width: 950px;
+  margin: 0 auto 34px;
+  color: #f5f1e8;
+}
+
+.booking-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.booking-progress-header span:last-child {
+  color: #d4af37;
+}
+
+.booking-progress-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.booking-progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #929292;
+  font-size: 13px;
+}
+
+.booking-progress-line {
+  width: 100%;
+  height: 3px;
+  background: #424242;
+  border-radius: 10px;
+}
+
+.booking-progress-step.active {
+  color: #d4af37;
+  font-weight: 600;
+}
+
+.booking-progress-step.active .booking-progress-line,
+.booking-progress-step.completed .booking-progress-line {
+  background: #d4af37;
+}
+
+.booking-progress-step.completed {
+  color: #f5f1e8;
+}
+
+@media (max-width: 600px) {
+  .booking-progress {
+    margin-bottom: 24px;
+  }
+
+  .booking-progress-header {
+    font-size: 11px;
+  }
+
+  .booking-progress-steps {
+    gap: 6px;
+  }
+
+  .booking-progress-step {
+    font-size: 11px;
+  }
+}

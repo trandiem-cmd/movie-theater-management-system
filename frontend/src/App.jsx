@@ -11,7 +11,7 @@ import HomePage from "./pages/customer/HomePage";
 import MovieListPage from "./pages/customer/MovieListPage";
 import MovieDetailPage from "./pages/customer/MovieDetailPage";
 import ProfilePage from "./pages/customer/ProfilePage";
-
+import SeatSelectionPage from "./pages/customer/SeatSelectionPage";
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
@@ -32,6 +32,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/movies" element={<MovieListPage />} />
           <Route path="/movies/:id" element={<MovieDetailPage />} />
+
 
           {/* Authentication */}
           <Route path="/login" element={<LoginPage />} />
@@ -59,6 +60,13 @@ function App() {
             path="/admin/movies"
             element={<MovieManagementPage />}
           />
+
+          {/* Seat Selection */}
+          <Route
+            path="/showtimes/:id/seats"
+            element={<SeatSelectionPage />}
+          />
+
         </Routes>
       </main>
 
