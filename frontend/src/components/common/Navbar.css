@@ -1,11 +1,20 @@
 
 .navbar {
+  width: 100%;
+  background-color: #000;
+}
+
+.navbar-inner {
+  width: min(
+    var(--content-max-width),
+    calc(100% - 48px)
+  );
+
+  margin: 0 auto;
+  padding: 10px 0;
+
   display: flex;
   align-items: center;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 10px 40px;
-  background-color: #000;
 }
 
 .navbar-left {
@@ -47,6 +56,7 @@
   flex-shrink: 0;
 }
 
+/* Search */
 .search-container {
   position: relative;
   display: flex;
@@ -75,12 +85,25 @@
   pointer-events: none;
 }
 
+/* Account */
+.account-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .account-link {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  padding: 0;
+  border: none;
+  background: transparent;
+
   color: #b88a16;
-  text-decoration: none;
+  cursor: pointer;
+
   transition: color 0.3s ease;
 }
 
@@ -93,13 +116,98 @@
   height: 24px;
 }
 
+/* Account dropdown */
+.account-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 1000;
+
+  display: flex;
+  flex-direction: column;
+
+  min-width: 180px;
+  padding: 10px;
+
+  border: 1px solid #383838;
+  border-radius: 10px;
+
+  background-color: #000;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.account-user {
+  padding: 10px;
+
+  color: #b88a16;
+  font-family: Georgia, serif;
+  font-size: 12px;
+  font-weight: bold;
+
+  border-bottom: 1px solid #383838;
+
+  overflow-wrap: anywhere;
+}
+
+.account-dropdown a,
+.account-dropdown button {
+  padding: 10px;
+
+  border: none;
+  background: transparent;
+
+  color: #fff;
+  text-align: left;
+  text-decoration: none;
+
+  font-family: Georgia, serif;
+  font-size: 12px;
+
+  cursor: pointer;
+}
+
+.account-dropdown a:hover,
+.account-dropdown button:hover {
+  color: #b88a16;
+}
+
+/* Responsive */
 @media (max-width: 750px) {
-  .navbar {
+  .navbar-inner {
     flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .navbar-left {
+    flex-wrap: wrap;
+    gap: 15px;
   }
 
   .nav-links {
     flex-wrap: wrap;
     gap: 12px;
+  }
+
+  .search-input {
+    width: 160px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-inner {
+    width: calc(100% - 24px);
+  }
+
+  .navbar-logo img {
+    height: 50px;
+  }
+
+  .nav-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .search-input {
+    width: 180px;
   }
 }

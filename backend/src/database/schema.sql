@@ -391,3 +391,30 @@ ON corporate_bookings(status);
 
 CREATE INDEX idx_corporate_bookings_user
 ON corporate_bookings(user_id);
+
+CREATE TABLE password_reset_otps (
+    otp_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    user_id INTEGER NOT NULL
+        REFERENCES users(user_id)
+        ON DELETE CASCADE,
+
+    otp_hash VARCHAR(64) NOT NULL,
+
+    expires_at TIMESTAMPTZ NOT NULL,
+
+    attempts INTEGER NOT NULL DEFAULT 0
+        CHECK (attempts >= 0 AND attempts <= 5),
+
+    verified_at TIMESTAMPTZ,
+
+    used_at TIMESTAMPTZ,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_password_reset_otps_user_id
+ON password_reset_otps(user_id);
+
+CREATE INDEX idx_password_reset_otps_expires_at
+ON password_reset_otps(expires_at);

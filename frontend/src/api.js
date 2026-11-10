@@ -13,6 +13,214 @@ export const testBackendConnection = async () => {
 };
 
 // Auth
+const handleResponse = async (response, defaultMessage) => {
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || defaultMessage);
+  }
+
+  return data;
+};
+export const login = async (email, password) => {
+  const response = await fetch(`${BASE_URL}/auth/login`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Login failed.");
+  }
+
+  return data;
+};
+
+export const register = async (
+  fullName,
+  email,
+  phone,
+  dateOfBirth,
+  password
+) => {
+  const response = await fetch(`${BASE_URL}/auth/register`, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      full_name: fullName,
+      email,
+      password,
+      phone,
+      date_of_birth: dateOfBirth,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Registration failed.");
+  }
+
+  return data;
+};
+
+export const getCurrentUser = async () => {
+  const response = await fetch(`${BASE_URL}/auth/me`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Not authenticated");
+  }
+
+  return data.user;
+};
+
+export const logout = async () => {
+  const response = await fetch(`${BASE_URL}/auth/logout`, {
+    method: "POST",
+    credentials: "same-origin",
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Logout failed.");
+  }
+
+  return data;
+};
+
+// Update Profile
+export const updateProfile = async (profileData) => {
+  const response = await fetch(`${BASE_URL}/auth/profile`, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      full_name: profileData.full_name,
+      phone: profileData.phone,
+      date_of_birth: profileData.date_of_birth,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Profile update failed.");
+  }
+
+  return data;
+};
+// Change Password
+export const changePassword = async (
+  currentPassword,
+  newPassword,
+  confirmPassword
+) => {
+  const response = await fetch(`${BASE_URL}/auth/change-password`, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      current_password: currentPassword,
+      new_password: newPassword,
+      confirm_password: confirmPassword,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Password change failed.");
+  }
+
+  return data;
+};
+export const forgotPassword = async (email) => {
+  const response = await fetch(`${BASE_URL}/auth/forgot-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to send OTP.");
+  }
+
+  return data;
+};
+
+export const verifyResetOtp = async (email, otp) => {
+  const response = await fetch(`${BASE_URL}/auth/verify-reset-otp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      otp,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "OTP verification failed.");
+  }
+
+  return data;
+};
+
+export const resetPassword = async (
+  email,
+  otp,
+  newPassword,
+  confirmPassword
+) => {
+  const response = await fetch(`${BASE_URL}/auth/reset-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      otp,
+      new_password: newPassword,
+      confirm_password: confirmPassword,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Password reset failed.");
+  }
+
+  return data;
+};
 // Movies
 // Theaters
 // Showtimes

@@ -8,9 +8,14 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  --page-max-width: 1440px;
+  --content-max-width: 1300px;
+  --page-padding: 24px;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 

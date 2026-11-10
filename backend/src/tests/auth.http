@@ -8,8 +8,8 @@ POST http://localhost:3001/api/auth/register
 Content-Type: application/json
 
 {
-  "full_name": "Test User",
-  "email": "testuser@example.com",
+  "full_name": "Test User3",
+  "email": "testuser2@example.com",
   "password": "Test123456",
   "phone": "0123456789",
   "date_of_birth": "2000-05-20"
@@ -47,4 +47,114 @@ Content-Type: application/json
 {
   "full_name": "Test User",
   "email": "anotheruser@example.com"
+}
+
+### Test login - Success
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser2@example.com",
+  "password": "Test123456"
+}
+
+### Test login - Missing password
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": ""
+}
+
+### Test login - Missing email and password
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "",
+  "password": ""
+}
+
+### Test login - Invalid email format
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "abc",
+  "password": "Test123456"
+}
+
+### Test login - Invalid password format
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": true
+}
+
+### Test login - Invalid email
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "abc@gmail.com",
+  "password": "Test123456"
+}
+
+### Test login - Invalid password
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser@example.com",
+  "password": "123"
+}
+
+### Test get current user
+GET http://localhost:3001/api/auth/me
+
+### Test logout
+POST http://localhost:3001/api/auth/logout
+
+### Test
+GET http://localhost:3001/api/auth/protected-test
+
+### Update Profile
+PUT http://localhost:3001/api/auth/profile
+Content-Type: application/json
+
+{
+  "full_name": "John Updated",
+  "phone": "0987654321",
+  "date_of_birth": "2000-05-20"
+}
+### Invalid Profile
+PUT http://localhost:3001/api/auth/profile
+Content-Type: application/json
+
+{
+  "full_name": "",
+  "phone": "123456789012345678901",
+  "date_of_birth": "2026-02-30"
+}
+### Unauthorized Update
+PUT http://localhost:3001/api/auth/profile
+Content-Type: application/json
+
+{
+  "full_name": "Test User",
+  "phone": "0123456789",
+  "date_of_birth": "2000-05-20"
+}
+
+### Change Password
+PUT http://localhost:3001/api/auth/change-password
+Content-Type: application/json
+
+{
+  "current_password": "Test123456",
+  "new_password": "NewPassword123",
+  "confirm_password": "NewPassword123"
 }
