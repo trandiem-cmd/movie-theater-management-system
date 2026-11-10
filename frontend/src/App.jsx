@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Footer from "./components/common/Footer";
+import Header from "./components/common/Header";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 
 import MovieManagementPage from "./pages/admin/MovieManagementPage";
@@ -18,11 +19,14 @@ import VerifyResetOtpPage from "./pages/auth/VerifyResetOtpPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 
 import "./App.css";
+import { Omega } from "lucide-react";
 
 function App() {
   return (
     <BrowserRouter>
+      
       <main className="main-content">
+        <Header />
         <Routes>
           {/* Customer pages */}
           <Route path="/" element={<HomePage />} />

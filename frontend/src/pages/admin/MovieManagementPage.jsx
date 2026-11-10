@@ -20,7 +20,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-import logo from "../../assets/rio-logo.png";
 import "./MovieManagementPage.css";
 
 const API_URL = "/api/admin/movies";
@@ -360,27 +359,10 @@ function AdminMoviePage() {
 
   return (
     <div className="admin-page">
-      {/* Header */}
-      <header className="admin-header">
-        <img
-          src={logo}
-          alt="RIO Cinema"
-          className="admin-logo"
-        />
-
-        <div className="header-title">
+      
+      <div className="header-title">
           Movie management
         </div>
-
-        <div className="header-actions">
-          <Bell size={20} />
-
-          <div className="admin-profile">
-            <UserCircle size={23} />
-            <span>Admin</span>
-          </div>
-        </div>
-      </header>
 
       {/* Main layout */}
       <div className="admin-layout">
