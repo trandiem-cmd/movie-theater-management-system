@@ -10,13 +10,13 @@ import MovieManagementPage from "./pages/admin/MovieManagementPage";
 import HomePage from "./pages/customer/HomePage";
 import MovieListPage from "./pages/customer/MovieListPage";
 import MovieDetailPage from "./pages/customer/MovieDetailPage";
-import ProfilePage from "./pages/customer/ProfilePage";
 
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import VerifyResetOtpPage from "./pages/auth/VerifyResetOtpPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
+import ProfilePage from "./pages/auth/ProfilePage";
 
 import "./App.css";
 import { Omega } from "lucide-react";
