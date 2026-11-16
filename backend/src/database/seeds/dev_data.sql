@@ -25,3 +25,48 @@ VALUES
     (1440769, 'The Beekeeper 2', 'Pulled back into the fight when the Beekeeper organization goes rogue and sets its sights on controlling the government, Clay must take on the very group that made him.', 105, 'Timo Tjahjanto', 'Jason Statham, Jeremy Irons, Yara Shahidi, Emmy Raver-Lampman, Bobby Naderi', 'English, Finnish, Swedish', '16', ARRAY['Action','Crime','Thriller'], ARRAY['Finnish','Swedish'], 'https://image.tmdb.org/t/p/w500/xlutnD8qZkrZmaDVyzIRCJlrUPp.jpg', 'https://www.youtube.com/watch?v=5HK3wimDxBI', '2027-01-13', 'coming_soon'),
     (1288438, 'Godzilla x Kong: Supernova', 'Godzilla and Kong return in an all-new adventure as Earth''s greatest titans face an unthinkable threat from beyond the stars. When a cosmic predator, Apex, sets its sights on Earth, only the combined might of monsters and humanity can avert total extinction.', 115, 'Grant Sputore', 'Kaitlyn Dever, Dan Stevens, Jack O''Connell, Delroy Lindo, Matthew Modine', 'English, Finnish, Swedish', '12', ARRAY['Science Fiction','Action','Adventure'], ARRAY['Finnish','Swedish'], 'https://image.tmdb.org/t/p/w500/gEGDDG6QMDFZ1sV32CGxvzaVPnv.jpg', NULL, '2027-03-25', 'coming_soon'),
     (1384758, 'Ice Age: Boiling Point', 'A dinosaur-and-lava-filled madcap adventure takes Manny, Sid, Diego, Ellie, Buck, acorn-obsessed Scrat – this time joined by Baby Scrat and the enormous Jurassic Scrat – and the rest of the herd to visit never before-seen corners of the treacherous Lost World.', 103, 'John Donkin', 'Ray Romano, John Leguizamo, Denis Leary, Simon Pegg, Queen Latifah', 'English, Finnish, Swedish', 'S', ARRAY['Adventure','Animation','Family','Comedy'], ARRAY['Finnish','Swedish'], 'https://image.tmdb.org/t/p/w500/mPhAreyZLLcZ9pl4KRyEaqSu1Zv.jpg', NULL, '2027-01-28', 'coming_soon');
+
+
+-- Insert theaters
+INSERT INTO theaters (
+    name,
+    address,
+    city,
+    phone,
+    status
+)
+VALUES
+(
+    'Cinema RIO Oulu',
+    'Kauppurienkatu 45, 90100 Oulu, Finland',
+    'Oulu',
+    '+358 8 5542 3890',
+    'active'
+),
+(
+    'Cinema RIO Tampere',
+    'Hämeenkatu 27, 33100 Tampere, Finland',
+    'Tampere',
+    '+358 2 2641 7520',
+    'active'
+);
+
+-- Insert rooms
+INSERT INTO rooms (
+    theater_id,
+    name,
+    capacity,
+    status
+)
+SELECT
+    t.theater_id,
+    r.name,
+    r.capacity,
+    'active'
+FROM theaters t
+CROSS JOIN (
+    VALUES
+        ('Auditorium 1', 100),
+        ('Auditorium 2', 200)
+) AS r(name, capacity)
+WHERE t.name IN ('Cinema RIO Oulu', 'Cinema RIO Tampere');
