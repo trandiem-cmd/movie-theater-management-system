@@ -17,6 +17,7 @@ import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import VerifyResetOtpPage from "./pages/auth/VerifyResetOtpPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import ProfilePage from "./pages/auth/ProfilePage";
+import TheaterListPage from "./pages/customer/TheaterListPage";
 
 import "./App.css";
 import { Omega } from "lucide-react";
@@ -32,7 +33,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/movies" element={<MovieListPage />} />
           <Route path="/movies/:id" element={<MovieDetailPage />} />
-
+          <Route path="/theaters" element={<TheaterListPage />} />
           {/* Authentication */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

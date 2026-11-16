@@ -158,3 +158,19 @@ Content-Type: application/json
   "new_password": "NewPassword123",
   "confirm_password": "NewPassword123"
 }
+
+### Get city
+GET http://localhost:3001/api/locations/cities
+Content-Type: application/json
+
+### Get theaters by city
+GET http://localhost:3001/api/locations/theaters?city=Tampere
+Content-Type: application/json
+
+### Get theater details
+GET http://localhost:3001/api/locations/theaters/2
+Content-Type: application/json
+
+### Get room details
+GET http://localhost:3001/api/locations/theaters/2/rooms
+Content-Type: application/json

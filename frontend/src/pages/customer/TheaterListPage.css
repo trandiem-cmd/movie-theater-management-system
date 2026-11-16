@@ -1,0 +1,973 @@
+
+/* ================================
+   THEATER PAGE
+================================ */
+
+.theater-page {
+  --cinema-bg: #101014;
+  --cinema-card: #19191f;
+  --cinema-border: #303038;
+  --cinema-text: #ffffff;
+  --cinema-muted: #a3a3ad;
+  --cinema-accent: #e5ad42;
+
+  min-height: 100vh;
+  padding: 48px 7%;
+  background: var(--cinema-bg);
+  color: var(--cinema-text);
+  font-family: inherit;
+}
+
+.theater-page * {
+  box-sizing: border-box;
+}
+
+
+
+/* HEADER */
+
+.theater-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 36px;
+}
+
+.theater-eyebrow {
+  display: block;
+  color: var(--cinema-accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.theater-page-header h1 {
+  font-size: clamp(32px, 4vw, 46px);
+  font-weight: 800;
+  margin: 0 0 12px;
+}
+
+.theater-page-header p {
+  color: var(--cinema-muted);
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* CITY AND THEATER SELECTOR */
+
+.theater-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.selector-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.selector-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #d8d8df;
+}
+
+.selector-group select {
+  width: 100%;
+  height: 32px;
+  padding: 0 16px;
+  color: white;
+  background: var(--cinema-card);
+  border: 1px;
+  border-radius: 9px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  font-size: 12px;
+}
+
+.selector-group select:focus {
+  border-color: var(--cinema-accent);
+}
+
+.selector-group select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.selector-group select option {
+  background: #19191f;
+  color: white;
+  font-size: 12px;
+}
+
+/* ERROR */
+
+.theater-error {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  color: #ffb5b5;
+  background: rgba(220, 60, 60, 0.12);
+  border: 1px solid rgba(220, 60, 60, 0.3);
+  border-radius: 8px;
+}
+
+.theater-error button {
+  border: none;
+  background: none;
+  color: inherit;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* LOADING */
+
+.theater-loading,
+.rooms-loading {
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  color: var(--cinema-muted);
+}
+
+.theater-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #41414a;
+  border-top-color: var(--cinema-accent);
+  border-radius: 50%;
+  animation: theater-spin 0.8s linear infinite;
+}
+
+@keyframes theater-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* HERO CAROUSEL */
+
+.theater-hero {
+  width: 100%;
+  margin-bottom: 52px;
+}
+
+.hero-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: clamp(350px, 48vw, 570px);
+  overflow: hidden;
+  border-radius: 16px;
+  background: #24242b;
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.hero-slide.active {
+  opacity: 1;
+  visibility: visible;
+  z-index: 1;
+}
+
+.hero-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.85) 0%,
+    rgba(0, 0, 0, 0.55) 45%,
+    rgba(0, 0, 0, 0.05) 100%
+  );
+}
+
+.hero-content {
+  position: absolute;
+  z-index: 3;
+  left: 7%;
+  bottom: 38%;
+  max-width: 600px;
+}
+
+.hero-label {
+  display: inline-block;
+  color: var(--cinema-accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 18px;
+}
+
+.hero-content h2 {
+  font-size: clamp(24px, 4vw, 42px);
+  font-weight: 800;
+  line-height: 1.15;
+  margin: 0 0 16px;
+}
+
+.hero-content p, button {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #e1e1e1;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 5px;
+  margin-top: 5px;
+}
+
+.cinema-details-link {
+  gap: 8px;
+  padding: 0 0 5px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid transparent;
+  color: #d6a85f;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.cinema-details-link:hover {
+  border-bottom-color: #d6a85f;
+  gap: 13px;
+}
+
+
+/* CAROUSEL ARROWS */
+
+.carousel-arrow {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.carousel-arrow:hover {
+  color: #17130d;
+  background: var(--cinema-accent);
+  border-color: var(--cinema-accent);
+}
+
+.carousel-prev {
+  left: 20px;
+}
+
+.carousel-next {
+  right: 20px;
+}
+
+/* CAROUSEL DOTS */
+
+.carousel-dots {
+  position: absolute;
+  z-index: 4;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.carousel-dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.5);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.carousel-dot.active {
+  width: 28px;
+  background: var(--cinema-accent);
+  border-radius: 10px;
+}
+
+.carousel-counter {
+  position: absolute;
+  z-index: 4;
+  right: 28px;
+  bottom: 25px;
+  color: white;
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+/* CINEMA INFORMATION */
+
+.cinema-information {
+  padding-bottom: 50px;
+}
+
+.cinema-info-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.cinema-info-heading h2 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 30px);
+  font-weight: 750;
+}
+
+.view-details-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  color: var(--cinema-accent);
+  background: transparent;
+  border: 1px solid var(--cinema-accent);
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.view-details-button:hover {
+  color: #17130d;
+  background: var(--cinema-accent);
+}
+
+.cinema-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.cinema-info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  min-width: 0;
+  padding: 24px 20px;
+  background: var(--cinema-card);
+  border: 1px solid var(--cinema-border);
+  border-radius: 10px;
+}
+
+.info-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cinema-accent);
+  background: rgba(229, 173, 66, 0.1);
+  border-radius: 9px;
+  font-size: 18px;
+}
+
+.info-label {
+  display: block;
+  margin-bottom: 9px;
+  color: var(--cinema-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.cinema-info-card p {
+  margin: 0;
+  color: white;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.cinema-description {
+  margin-top: 28px;
+  padding: 25px;
+  background: var(--cinema-card);
+  border: 1px solid var(--cinema-border);
+  border-radius: 10px;
+}
+
+.cinema-description h3 {
+  margin: 0 0 12px;
+  font-size: 17px;
+}
+
+.cinema-description p {
+  margin: 0;
+  color: var(--cinema-muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* EMPTY STATE */
+
+.theater-empty,
+.rooms-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 65px 20px;
+  color: var(--cinema-muted);
+}
+
+.theater-empty > span,
+.rooms-empty > span {
+  color: var(--cinema-accent);
+  font-size: 40px;
+  margin-bottom: 15px;
+}
+
+.theater-empty h2,
+.rooms-empty h3 {
+  color: white;
+  margin: 0 0 10px;
+}
+
+.theater-empty p,
+.rooms-empty p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* MODAL BACKDROP */
+
+.theater-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(5px);
+  animation: modal-fade 0.2s ease;
+}
+
+@keyframes modal-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* MODAL */
+
+.theater-modal {
+  width: 100%;
+  max-width: 680px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #19191f;
+  border: 1px solid var(--cinema-border);
+  border-radius: 14px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+  animation: modal-slide 0.25s ease;
+}
+
+@keyframes modal-slide {
+  from {
+    transform: translateY(15px);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* MODAL HEADER */
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 25px 28px;
+  border-bottom: 1px solid var(--cinema-border);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 23px;
+}
+
+.modal-close-button {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: #292930;
+  border: none;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.modal-close-button:hover {
+  color: #17130d;
+  background: var(--cinema-accent);
+}
+
+/* MODAL TABS */
+
+.modal-tabs {
+  display: flex;
+  gap: 28px;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--cinema-border);
+}
+
+.modal-tabs button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 17px 0;
+  color: var(--cinema-muted);
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.modal-tabs button:hover,
+.modal-tabs button.active {
+  color: var(--cinema-accent);
+}
+
+.modal-tabs button.active::after {
+  position: absolute;
+  content: "";
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--cinema-accent);
+}
+
+.room-count {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 21px;
+  height: 21px;
+  padding: 0 5px;
+  color: #17130d;
+  background: var(--cinema-accent);
+  border-radius: 20px;
+  font-size: 10px;
+}
+
+/* MODAL BODY */
+
+.modal-body {
+  min-height: 260px;
+  padding: 15px 28px;
+  overflow-y: auto;
+}
+.modal-info-item {
+   padding-bottom: 5px;
+}
+.modal-info-item p {
+  margin: 0;
+  color: var(--cinema-muted);
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.modal-description {
+  grid-column: 1 / -1;
+  padding-top: 20px;
+  border-top: 1px solid var(--cinema-border);
+  text-align: left;
+}
+
+.modal-description p {
+  margin: 0;
+  color: var(--cinema-muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+/* ROOMS */
+
+.rooms-heading {
+  margin-bottom: 20px;
+}
+
+.rooms-heading h3 {
+  margin: 0 0 6px;
+  color: white;
+  font-size: 18px;
+}
+
+.rooms-heading p {
+  margin: 0;
+  color: var(--cinema-muted);
+  font-size: 12px;
+}
+
+.rooms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.room-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 17px;
+  background: #222229;
+  border: 1px solid var(--cinema-border);
+  border-radius: 9px;
+  transition: 0.2s;
+}
+
+.room-card:hover {
+  border-color: var(--cinema-accent);
+  transform: translateY(-2px);
+}
+
+.room-icon {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cinema-accent);
+  background: rgba(229, 173, 66, 0.1);
+  border-radius: 9px;
+  font-size: 21px;
+}
+
+.room-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.room-details h4 {
+  margin: 0 0 6px;
+  color: white;
+  font-size: 14px;
+}
+
+.room-details p {
+  margin: 0;
+  color: var(--cinema-muted);
+  font-size: 12px;
+}
+
+.room-capacity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 16px;
+  border-left: 1px solid var(--cinema-border);
+}
+
+.capacity-icon {
+  color: var(--cinema-accent);
+  font-size: 20px;
+}
+
+.room-capacity div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.room-capacity strong {
+  color: white;
+  font-size: 15px;
+}
+
+.room-capacity div span {
+  color: var(--cinema-muted);
+  font-size: 11px;
+}
+
+/* MODAL FOOTER */
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 18px 28px;
+  border-top: 1px solid var(--cinema-border);
+}
+
+.modal-footer button {
+  padding: 11px 25px;
+  color: #17130d;
+  background: var(--cinema-accent);
+  border: none;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.modal-footer button:hover {
+  background: #f5c86e;
+}
+
+/* RESPONSIVE - TABLET */
+
+@media (max-width: 900px) {
+  .theater-page {
+    padding: 35px 5%;
+  }
+
+  .cinema-info-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cinema-info-card:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .hero-image-wrapper {
+    height: 420px;
+  }
+}
+
+/* RESPONSIVE - MOBILE */
+
+@media (max-width: 600px) {
+  .theater-page {
+    padding: 28px 16px;
+  }
+
+  .theater-page-header {
+    margin-bottom: 25px;
+  }
+
+  .theater-page-header h1 {
+    font-size: 32px;
+  }
+
+  .theater-page-header p {
+    font-size: 13px;
+  }
+
+  .theater-selector {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .hero-image-wrapper {
+    height: 390px;
+    border-radius: 10px;
+  }
+
+  .hero-overlay {
+    background: linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.9) 0%,
+      rgba(0, 0, 0, 0.45) 65%,
+      rgba(0, 0, 0, 0.1) 100%
+    );
+  }
+
+  .hero-content {
+    left: 22px;
+    right: 22px;
+    bottom: 75px;
+  }
+
+  .hero-content h2 {
+    font-size: 30px;
+  }
+
+  .hero-content p {
+    font-size: 12px;
+  }
+
+  .hero-label {
+    font-size: 9px;
+  }
+
+  .carousel-arrow {
+    width: 35px;
+    height: 35px;
+    font-size: 14px;
+  }
+
+  .carousel-prev {
+    left: 10px;
+  }
+
+  .carousel-next {
+    right: 10px;
+  }
+
+  .carousel-counter {
+    display: none;
+  }
+
+  .cinema-info-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .cinema-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cinema-info-card:last-child {
+    grid-column: auto;
+  }
+
+  .cinema-info-card {
+    padding: 18px;
+  }
+
+  .theater-modal-backdrop {
+    padding: 10px;
+  }
+
+  .theater-modal {
+    max-height: 90vh;
+  }
+
+  .modal-header {
+    padding: 20px;
+  }
+
+  .modal-header h2 {
+    font-size: 19px;
+  }
+
+  .modal-tabs {
+    gap: 20px;
+    padding: 0 20px;
+  }
+
+  .modal-tabs button {
+    font-size: 11px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .modal-information {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .modal-description {
+    grid-column: auto;
+  }
+
+  .room-card {
+    gap: 10px;
+    padding: 13px;
+  }
+
+  .room-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .room-capacity {
+    gap: 6px;
+    padding-left: 10px;
+  }
+
+  .modal-footer {
+    padding: 15px 20px;
+  }
+}
+
+/* ACCESSIBILITY */
+
+.theater-page button:focus-visible,
+.theater-page select:focus-visible {
+  outline: 2px solid var(--cinema-accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theater-page *,
+  .theater-page *::before,
+  .theater-page *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+.theater-top-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .theater-top-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
