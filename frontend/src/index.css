@@ -55,7 +55,6 @@ body {
   min-height: 100vh;
   margin: 0 auto;
   padding: 0;
-  text-align: center;
   border-inline: 1px solid var(--border);
   display: flex;
   flex-direction: column;
