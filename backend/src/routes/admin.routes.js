@@ -8,6 +8,13 @@ import {
   deleteMovie,
 } from "../controllers/adminMovie.controller.js";
 
+import {
+  getAdminShowtimes,
+  createShowtime,
+  updateShowtime,
+  cancelShowtime,
+} from "../controllers/showtime.controller.js";
+
 import { requireRole } from "../middleware/role.middleware.js";
 
 const router = express.Router();
@@ -26,5 +33,11 @@ router.put("/movies/:id", updateMovie);
 
 // DELETE /api/admin/movies/:id
 router.delete("/movies/:id", deleteMovie);
+
+// Showtime management
+router.post("/showtimes", createShowtime);
+router.put("/showtimes/:id", updateShowtime);
+router.delete("/showtimes/:id", cancelShowtime);
+router.get("/showtimes", getAdminShowtimes);
 
 export default router;

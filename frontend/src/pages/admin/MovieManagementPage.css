@@ -66,69 +66,6 @@ select {
 }
 
 /* ========================================
-   SIDEBAR
-======================================== */
-
-.admin-sidebar {
-  width: 230px;
-  flex-shrink: 0;
-  background: linear-gradient(#171717, #050505);
-  border-right: 1px solid #a98200;
-  padding: 25px 30px;
-  display: flex;
-  flex-direction: column;
-}
-
-.admin-sidebar h2 {
-  color: #d6a32c;
-  font-size: 21px;
-  font-weight: normal;
-  margin: 0 0 25px;
-}
-
-.sidebar-links {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.sidebar-links a {
-  color: #ddd;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 16px;
-}
-
-.sidebar-links a svg,
-.logout-button svg {
-  width: 17px;
-  height: 17px;
-}
-
-.sidebar-links a:hover,
-.sidebar-links a.active {
-  color: #d6a32c;
-}
-
-.logout-button {
-  margin-top: auto;
-  background: none;
-  border: none;
-  color: #ddd;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.logout-button:hover {
-  color: #d6a32c;
-}
-
-/* ========================================
    MAIN CONTENT
 ======================================== */
 
