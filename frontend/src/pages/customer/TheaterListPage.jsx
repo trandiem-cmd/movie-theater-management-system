@@ -5,8 +5,9 @@ import ouluImage2 from "../../assets/oulu-theater-2.jpg";
 import tampereImage1 from "../../assets/tampere-theater-1.jpg";
 import tampereImage2 from "../../assets/tampere-theater-2.jpg";
 import "./TheaterListPage.css";
-const API_BASE_URL = import.meta.env.VITE_API_URL || "";
-const LOCATION_API = `${API_BASE_URL}/api/locations`;
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const LOCATION_API = `${API_BASE_URL}/theaters`;
 
 // Images mapped by city
 const cityTheaterImages = {
@@ -42,18 +43,6 @@ const TheaterListPage = () => {
     cityTheaterImages[selectedCity.trim().toLowerCase()] ||
     [ouluImage1, ouluImage2];
 
-  // Fetch helper
-  const fetchAPI = async (url, signal) => {
-    const response = await fetch(url, { signal });
-    const data = await response.json();
-
-    if (!response.ok || data.success === false) {
-      throw new Error(data.message || "Something went wrong");
-    }
-
-    return data;
-  };
-
   // 1. Fetch cities
   useEffect(() => {
     const controller = new AbortController();
@@ -63,10 +52,15 @@ const TheaterListPage = () => {
         setLoadingCities(true);
         setError("");
 
-        const data = await fetchAPI(
-          `${LOCATION_API}/cities`,
-          controller.signal
-        );
+        const response = await fetch(`${LOCATION_API}/cities`, {
+          signal: controller.signal,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.success === false) {
+          throw new Error(data.message || "Failed to fetch cities");
+        }
 
         const cityList = data.cities || [];
         setCities(cityList);
@@ -108,10 +102,16 @@ const TheaterListPage = () => {
         setCurrentIndex(0);
         setIsModalOpen(false);
 
-        const data = await fetchAPI(
+        const response = await fetch(
           `${LOCATION_API}/theaters?city=${encodeURIComponent(selectedCity)}`,
-          controller.signal
+          { signal: controller.signal }
         );
+
+        const data = await response.json();
+
+        if (!response.ok || data.success === false) {
+          throw new Error(data.message || "Failed to fetch theaters");
+        }
 
         const theaterList = data.theaters || [];
 
@@ -151,10 +151,18 @@ const TheaterListPage = () => {
         setTheaterDetails(null);
         setCurrentIndex(0);
 
-        const data = await fetchAPI(
-          `${LOCATION_API}/theaters/${selectedTheaterId}`,
-          controller.signal
+        const response = await fetch(
+          `${LOCATION_API}/${selectedTheaterId}`,
+          { signal: controller.signal }
         );
+
+        const data = await response.json();
+
+        if (!response.ok || data.success === false) {
+          throw new Error(
+            data.message || "Failed to fetch theater details"
+          );
+        }
 
         setTheaterDetails(data.theater);
       } catch (err) {
@@ -184,10 +192,16 @@ const TheaterListPage = () => {
         setLoadingRooms(true);
         setRooms([]);
 
-        const data = await fetchAPI(
-          `${LOCATION_API}/theaters/${selectedTheaterId}/rooms`,
-          controller.signal
+        const response = await fetch(
+          `${LOCATION_API}/${selectedTheaterId}/rooms`,
+          { signal: controller.signal }
         );
+
+        const data = await response.json();
+
+        if (!response.ok || data.success === false) {
+          throw new Error(data.message || "Failed to fetch rooms");
+        }
 
         setRooms(data.rooms || []);
       } catch (err) {
@@ -208,12 +222,14 @@ const TheaterListPage = () => {
 
   // 5. Carousel controls
   const nextSlide = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % 2);
-  }, []);
+    setCurrentIndex((prev) => (prev + 1) % heroImages.length);
+  }, [heroImages.length]);
 
   const previousSlide = useCallback(() => {
-    setCurrentIndex((prev) => (prev - 1 + 2) % 2);
-  }, []);
+    setCurrentIndex(
+      (prev) => (prev - 1 + heroImages.length) % heroImages.length
+    );
+  }, [heroImages.length]);
 
   const goToSlide = (index) => {
     setCurrentIndex(index);
@@ -221,12 +237,12 @@ const TheaterListPage = () => {
 
   // 6. Carousel auto-play
   useEffect(() => {
-    if (!selectedTheaterId) return;
+    if (!selectedTheaterId || heroImages.length <= 1) return;
 
     setCurrentIndex(0);
 
     intervalRef.current = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % 2);
+      setCurrentIndex((prev) => (prev + 1) % heroImages.length);
     }, 5000);
 
     return () => {
@@ -235,7 +251,7 @@ const TheaterListPage = () => {
         intervalRef.current = null;
       }
     };
-  }, [selectedTheaterId]);
+  }, [selectedTheaterId, heroImages.length]);
 
   // 7. Handle city change
   const handleCityChange = (event) => {
@@ -248,11 +264,6 @@ const TheaterListPage = () => {
     setCurrentIndex(0);
     setIsModalOpen(false);
   };
-
-  const selectedTheater = theaters.find(
-    (theater) =>
-      String(theater.theater_id) === selectedTheaterId
-  );
 
   // 9. Modal controls
   const openDetailsModal = () => {
@@ -285,76 +296,79 @@ const TheaterListPage = () => {
 
   return (
     <main className="theater-page">
-        <div className="theater-top-layout">
+      <div className="page-container">
+      <div className="theater-top-layout">
         {/* PAGE HEADER */}
         <section className="theater-page-header">
-            <div>
+          <div>
             <span className="theater-eyebrow">
-                DISCOVER YOUR CINEMA
+              DISCOVER YOUR CINEMA
             </span>
+
             <p>
-                Find your nearest cinema and discover the perfect
-                place to enjoy your favorite movies.
+              Find your nearest cinema and discover the perfect
+              place to enjoy your favorite movies.
             </p>
-            </div>
+          </div>
         </section>
 
         {/* CITY AND THEATER SELECTOR */}
         <section className="theater-selector">
-            <div className="selector-group">
+          <div className="selector-group">
             <label htmlFor="city-select">
-                Select City
+              Select City
             </label>
+
             <select
-                id="city-select"
-                value={selectedCity}
-                onChange={handleCityChange}
-                disabled={loadingCities || cities.length === 0}
+              id="city-select"
+              value={selectedCity}
+              onChange={handleCityChange}
+              disabled={loadingCities || cities.length === 0}
             >
-                <option value="">
+              <option value="">
                 {loadingCities
-                    ? "Loading cities..."
-                    : "Choose a city"}
-                </option>
+                  ? "Loading cities..."
+                  : "Choose a city"}
+              </option>
 
-                {cities.map((city) => (
+              {cities.map((city) => (
                 <option key={city} value={city}>
-                    {city}
+                  {city}
                 </option>
-                ))}
+              ))}
             </select>
-            </div>
+          </div>
 
-            <div className="selector-group">
+          <div className="selector-group">
             <label htmlFor="theater-select">
-                Select Theater
+              Select Theater
             </label>
 
             <select
-                id="theater-select"
-                value={selectedTheaterId}
-                onChange={handleTheaterChange}
-                disabled={loadingTheaters || theaters.length === 0}
+              id="theater-select"
+              value={selectedTheaterId}
+              onChange={handleTheaterChange}
+              disabled={loadingTheaters || theaters.length === 0}
             >
-                <option value="">
+              <option value="">
                 {loadingTheaters
-                    ? "Loading theaters..."
-                    : "Choose a theater"}
-                </option>
+                  ? "Loading theaters..."
+                  : "Choose a theater"}
+              </option>
 
-                {theaters.map((theater) => (
+              {theaters.map((theater) => (
                 <option
-                    key={theater.theater_id}
-                    value={theater.theater_id}
+                  key={theater.theater_id}
+                  value={theater.theater_id}
                 >
-                    {theater.name}
+                  {theater.name}
                 </option>
-                ))}
+              ))}
             </select>
-            </div>
-
+          </div>
         </section>
-        </div>
+      </div>
+
       {/* ERROR MESSAGE */}
       {error && (
         <div className="theater-error" role="alert">
@@ -379,12 +393,9 @@ const TheaterListPage = () => {
 
       {!loadingDetails && theaterDetails && (
         <>
-
           {/* HERO CAROUSEL */}
           <section className="theater-hero">
-
             <div className="hero-image-wrapper">
-
               {heroImages.map((image, index) => (
                 <div
                   key={`${selectedCity}-${index}`}
@@ -403,24 +414,26 @@ const TheaterListPage = () => {
 
               {/* HERO CONTENT */}
               <div className="hero-content">
-
                 <span className="hero-label">
                   WELCOME TO OUR CINEMA
                 </span>
+
                 <h2>{theaterDetails.name}</h2>
+
                 <p>
                   Address: {theaterDetails.address}
                 </p>
+
                 <p>
                   Phone: {theaterDetails.phone}
                 </p>
+
                 <button
                   className="cinema-details-link"
                   onClick={openDetailsModal}
                 >
-                  Cinema Details →  
+                  Cinema Details →
                 </button>
-
               </div>
 
               {/* PREVIOUS */}
@@ -457,12 +470,8 @@ const TheaterListPage = () => {
                   />
                 ))}
               </div>
-
             </div>
-
           </section>
-
-
         </>
       )}
 
@@ -473,6 +482,7 @@ const TheaterListPage = () => {
           <div className="theater-empty">
             <span>⌖</span>
             <h2>No theaters found</h2>
+
             <p>
               There are currently no active theaters in this city.
             </p>
@@ -489,17 +499,14 @@ const TheaterListPage = () => {
             }
           }}
         >
-
           <div
             className="theater-modal"
             role="dialog"
             aria-modal="true"
             aria-labelledby="theater-modal-title"
           >
-
             {/* MODAL HEADER */}
             <div className="modal-header">
-
               <div>
                 <span className="theater-eyebrow">
                   CINEMA DETAILS
@@ -517,12 +524,10 @@ const TheaterListPage = () => {
               >
                 ×
               </button>
-
             </div>
 
             {/* MODAL TABS */}
             <div className="modal-tabs">
-
               <button
                 className={
                   activeTab === "information" ? "active" : ""
@@ -544,26 +549,27 @@ const TheaterListPage = () => {
                   {rooms.length}
                 </span>
               </button>
-
             </div>
 
             {/* MODAL BODY */}
             <div className="modal-body">
-
               {/* THEATER INFORMATION TAB */}
               {activeTab === "information" && (
                 <div className="modal-information">
                   <div className="modal-info-item">
-                      <p>
-                        Address: {theaterDetails.address || "Not available"}
-                      </p>
-                       <p>
-                        Phone: {theaterDetails.phone || "Not available"}
-                      </p>
-                      <p>
-                        Email: {theaterDetails.email || ""}
-                      </p>            
+                    <p>
+                      Address: {theaterDetails.address || "Not available"}
+                    </p>
+
+                    <p>
+                      Phone: {theaterDetails.phone || "Not available"}
+                    </p>
+
+                    <p>
+                      Email: {theaterDetails.email || ""}
+                    </p>
                   </div>
+
                   <div className="modal-description">
                     <span className="info-label">
                       DESCRIPTION
@@ -574,14 +580,12 @@ const TheaterListPage = () => {
                         "No description available."}
                     </p>
                   </div>
-
                 </div>
               )}
 
               {/* ROOMS TAB */}
               {activeTab === "rooms" && (
                 <div className="rooms-content">
-
                   {loadingRooms ? (
                     <div className="rooms-loading">
                       <div className="theater-spinner" />
@@ -589,7 +593,6 @@ const TheaterListPage = () => {
                     </div>
                   ) : rooms.length > 0 ? (
                     <>
-
                       <div className="rooms-heading">
                         <div>
                           <h3>Available Rooms</h3>
@@ -601,13 +604,11 @@ const TheaterListPage = () => {
                       </div>
 
                       <div className="rooms-list">
-
                         {rooms.map((room) => (
                           <div
                             className="room-card"
                             key={room.room_id}
                           >
-
                             <div className="room-details">
                               <h4>{room.name}</h4>
                               <p>Screening Room</p>
@@ -619,12 +620,9 @@ const TheaterListPage = () => {
                                 <span>Seats</span>
                               </div>
                             </div>
-
                           </div>
                         ))}
-
                       </div>
-
                     </>
                   ) : (
                     <div className="rooms-empty">
@@ -636,10 +634,8 @@ const TheaterListPage = () => {
                       </p>
                     </div>
                   )}
-
                 </div>
               )}
-
             </div>
 
             {/* MODAL FOOTER */}
@@ -648,12 +644,10 @@ const TheaterListPage = () => {
                 Close
               </button>
             </div>
-
           </div>
-
         </div>
       )}
-
+      </div>
     </main>
   );
 };

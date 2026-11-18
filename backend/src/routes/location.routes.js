@@ -4,7 +4,7 @@ import { getCities, getTheatersByCity, getTheaterDetails, getRoomsByTheater} fro
 const router = express.Router();
 
 router.get('/cities', getCities);
-router.get('/', getTheatersByCity);
+router.get('/theaters', getTheatersByCity);
 router.get('/:theaterId', getTheaterDetails);
 router.get('/:theaterId/rooms', getRoomsByTheater);
 

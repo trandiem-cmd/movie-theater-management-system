@@ -164,7 +164,7 @@ GET http://localhost:3001/api/theaters/cities
 Content-Type: application/json
 
 ### Get theaters by city
-GET http://localhost:3001/api/theaters?city=Tampere
+GET http://localhost:3001/api/theaters/theaters?city=Tampere
 Content-Type: application/json
 
 ### Get theater details
