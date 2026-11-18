@@ -4,8 +4,8 @@ import { getCities, getTheatersByCity, getTheaterDetails, getRoomsByTheater} fro
 const router = express.Router();
 
 router.get('/cities', getCities);
-router.get('/theaters', getTheatersByCity);
-router.get('/theaters/:theaterId', getTheaterDetails);
-router.get('/theaters/:theaterId/rooms', getRoomsByTheater);
+router.get('/', getTheatersByCity);
+router.get('/:theaterId', getTheaterDetails);
+router.get('/:theaterId/rooms', getRoomsByTheater);
 
 export default router;

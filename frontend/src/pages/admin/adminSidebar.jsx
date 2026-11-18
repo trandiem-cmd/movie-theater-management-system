@@ -2,6 +2,7 @@
 import {
   LayoutDashboard,
   Clapperboard,
+  Building2,
   CalendarDays,
   Ticket,
   ChartColumn,
@@ -26,6 +27,11 @@ function AdminSidebar({ onLogout }) {
         <NavLink to="/admin/movies">
           <Clapperboard />
           Movies
+        </NavLink>
+
+        <NavLink to="/admin/theaters">
+          <Building2 />
+          Theaters
         </NavLink>
 
         <NavLink to="/admin/showtimes">

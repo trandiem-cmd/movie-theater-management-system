@@ -160,17 +160,175 @@ Content-Type: application/json
 }
 
 ### Get city
-GET http://localhost:3001/api/locations/cities
+GET http://localhost:3001/api/theaters/cities
 Content-Type: application/json
 
 ### Get theaters by city
-GET http://localhost:3001/api/locations/theaters?city=Tampere
+GET http://localhost:3001/api/theaters?city=Tampere
 Content-Type: application/json
 
 ### Get theater details
-GET http://localhost:3001/api/locations/theaters/2
+GET http://localhost:3001/api/theaters/2
 Content-Type: application/json
 
 ### Get room details
-GET http://localhost:3001/api/locations/theaters/2/rooms
+GET http://localhost:3001/api/theaters/2/rooms
 Content-Type: application/json
+
+### Admin login
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@rioadmin.com",
+  "password": "12345678"
+}
+
+### Get all cities (including inactive theaters)
+GET http://localhost:3001/api/admin/theaters/cities
+
+### Get all theaters
+GET http://localhost:3001/api/admin/theaters
+
+### Filter theaters by city
+GET http://localhost:3001/api/admin/theaters?city=Oulu
+
+### Filter theaters by city (case-insensitive)
+GET http://localhost:3001/api/admin/theaters?city=oulu
+
+### Get theater details
+GET http://localhost:3001/api/admin/theaters/2
+
+### Get theater details - invalid ID
+GET http://localhost:3001/admin/theaters/abc
+
+### Get theater details - nonexistent ID
+GET http://localhost:3001/admin/theaters/999999
+
+### Create theater
+POST http://localhost:3001/api/admin/theaters
+Content-Type: application/json
+
+{
+  "name": "REST Client Test Theater",
+  "address": "123 Test Street",
+  "city": "Oulu",
+  "phone": "0401234567",
+  "email": "testtheater@example.com",
+  "description": "Theater created for API testing",
+  "image_url": "https://example.com/theater.jpg",
+  "status": "active"
+}
+
+### Update theater
+PUT http://localhost:3001/api/admin/theaters/4
+Content-Type: application/json
+
+{
+  "name": "Updated Test Theater",
+  "city": "Helsinki",
+  "status": "inactive"
+}
+
+### Update theater - invalid status
+PUT http://localhost:3001/api/admin/theaters/4
+Content-Type: application/json
+
+{
+  "status": "deleted"
+}
+
+### Update theater - empty body
+PUT http://localhost:3001/api/admin/theaters/4
+Content-Type: application/json
+
+{}
+
+### Delete theater
+DELETE http://localhost:3001/api/admin/theaters/4
+
+### Delete theater - nonexistent ID
+DELETE http://localhost:3001/api/admin/theaters/999999
+
+
+
+### Get rooms by theater
+GET http://localhost:3001/api/admin/theaters/2/rooms
+
+### Get rooms - invalid theater ID
+GET http://localhost:3001/api/admin/theaters/abc/rooms
+
+### Get rooms - nonexistent theater
+GET http://localhost:3001/api/admin/theaters/999999/rooms
+
+### Create room
+
+POST http://localhost:3001/api/admin/theaters/2/rooms
+Content-Type: application/json
+
+{
+  "name": "REST Test Room",
+  "capacity": 100,
+  "status": "active"
+}
+
+### Create room - duplicate name
+POST http://localhost:3001/api/admin/theaters/2/rooms
+Content-Type: application/json
+
+{
+  "name": "REST Test Room",
+  "capacity": 100,
+  "status": "active"
+}
+
+### Create room - invalid capacity
+POST http://localhost:3001/api/admin/theaters/2/rooms
+Content-Type: application/json
+
+{
+  "name": "Invalid Capacity Room",
+  "capacity": 0,
+  "status": "active"
+}
+
+### Create room - nonexistent theater
+POST http://localhost:3001/api/admin/theaters/999999/rooms
+Content-Type: application/json
+
+{
+  "name": "Room Without Theater",
+  "capacity": 100
+}
+
+### Update room
+PUT http://localhost:3001/api/admin/rooms/2
+Content-Type: application/json
+
+{
+  "name": "Auditorium 1",
+  "capacity": 100,
+  "status": "active"
+}
+
+### Update room - invalid capacity
+PUT http://localhost:3001/api/admin/rooms/2
+Content-Type: application/json
+
+{
+  "capacity": -10
+}
+
+### Update room - nonexistent ID
+PUT http://localhost:3001/api/admin/rooms/999999
+Content-Type: application/json
+
+{
+  "name": "Nonexistent Room"
+}
+
+### Delete room
+DELETE http://localhost:3001/api/admin/rooms/2
+
+### Delete room - nonexistent ID
+DELETE http://localhost:3001/api/admin/rooms/999999

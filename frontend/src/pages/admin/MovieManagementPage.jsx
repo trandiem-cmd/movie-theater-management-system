@@ -352,7 +352,7 @@ function AdminMoviePage() {
 
   return (
     <div className="admin-page">
-      
+    <div className="page-container">
       <div className="header-title">
           Movie management
         </div>
@@ -722,6 +722,7 @@ function AdminMoviePage() {
           )}
         </main>
       </div>
+    </div>
     </div>
   );
 }

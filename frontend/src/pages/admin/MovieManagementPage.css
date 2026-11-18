@@ -39,7 +39,9 @@ select {
 .header-title {
   flex: 1;
   color: #d6a32c;
-  font-size: 23px;
+  font-size: 25px;
+  text-align: center;
+  padding-top: 15px;
 }
 
 .header-actions {
@@ -135,7 +137,7 @@ select {
 .admin-main {
   flex: 1;
   min-width: 0;
-  padding: 35px 30px 30px;
+  padding: 35px 00px 15px 30px;
 }
 
 /* Add Movie button */

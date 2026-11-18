@@ -6,6 +6,7 @@ import Header from "./components/common/Header";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 
 import MovieManagementPage from "./pages/admin/MovieManagementPage";
+import TheaterManagementPage from "./pages/admin/TheaterManagementPage";
 
 import HomePage from "./pages/customer/HomePage";
 import MovieListPage from "./pages/customer/MovieListPage";
@@ -60,10 +61,15 @@ function App() {
             path="/admin/movies"
             element={<MovieManagementPage />}
           />
+          <Route
+            path="/admin/theaters"
+            element={<TheaterManagementPage />}
+          />
         </Routes>
-      </main>
+      
 
       <Footer />
+      </main>
     </BrowserRouter>
   );
 }
