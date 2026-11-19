@@ -15,7 +15,13 @@ export const testBackendConnection = async () => {
 // Auth
 const handleResponse = async (response, defaultMessage) => {
   const data = await response.json();
+  if (response.status === 401) {
+    throw new Error("Authentication required.");
+  }
 
+  if (response.status === 403) {
+    throw new Error("You do not have Admin permission.");
+  }
   if (!response.ok) {
     throw new Error(data.message || defaultMessage);
   }
@@ -223,5 +229,107 @@ export const resetPassword = async (
 };
 // Movies
 // Theaters
+const THEATER_API = `${BASE_URL}/admin/theaters`;
+
+export const getTheaters = async () => {
+  const response = await fetch(THEATER_API, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  return handleResponse(response, "Could not load theaters.");
+};
+
+export const getTheaterCities = async () => {
+  const response = await fetch(`${THEATER_API}/cities`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  return handleResponse(response, "Could not load cities.");
+};
+
+export const createTheater = async (theaterData) => {
+  const response = await fetch(THEATER_API, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(theaterData),
+  });
+
+  return handleResponse(response, "Could not save the theater.");
+};
+
+export const updateTheater = async (theaterId, theaterData) => {
+  const response = await fetch(`${THEATER_API}/${theaterId}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(theaterData),
+  });
+
+  return handleResponse(response, "Could not save the theater.");
+};
+
+export const deleteTheaterAPI = async (theaterId) => {
+  const response = await fetch(`${THEATER_API}/${theaterId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  return handleResponse(response, "Could not delete the theater.");
+};
+
+// ROOM API
+
+const ROOM_API = `${BASE_URL}/admin/rooms`;
+
+export const getTheaterRooms = async (theaterId) => {
+  const response = await fetch(`${THEATER_API}/${theaterId}/rooms`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  return handleResponse(response, "Could not load rooms.");
+};
+
+export const createRoom = async (theaterId, roomData) => {
+  const response = await fetch(`${THEATER_API}/${theaterId}/rooms`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(roomData),
+  });
+
+  return handleResponse(response, "Could not save the room.");
+};
+
+export const updateRoom = async (roomId, roomData) => {
+  const response = await fetch(`${ROOM_API}/${roomId}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(roomData),
+  });
+
+  return handleResponse(response, "Could not save the room.");
+};
+
+export const deleteRoomAPI = async (roomId) => {
+  const response = await fetch(`${ROOM_API}/${roomId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  return handleResponse(response, "Could not delete the room.");
+};
 // Showtimes
 // Bookings
