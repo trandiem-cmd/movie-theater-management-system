@@ -423,9 +423,16 @@ useEffect(() => {
                   required
                 >
                   <option value="">Select movie</option>
+
                   {movies.map((movie) => (
                     <option key={movie.movie_id} value={movie.movie_id}>
-                      {movie.title}
+                      {movie.title} — {
+                        movie.status === "coming_soon"
+                          ? "Coming Soon"
+                          : movie.status === "now_showing"
+                            ? "Now Showing"
+                            : movie.status
+                      }
                     </option>
                   ))}
                 </select>

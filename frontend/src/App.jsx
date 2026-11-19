@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/common/ProtectedRoute";
 import MovieManagementPage from "./pages/admin/MovieManagementPage";
 import ShowtimeManagementPage from "./pages/admin/ShowtimeManagementPage";
 import AddShowtimePage from "./pages/admin/AddShowtimePage";
+import TheaterManagementPage from "./pages/admin/TheaterManagementPage";
 
 import HomePage from "./pages/customer/HomePage";
 import MovieListPage from "./pages/customer/MovieListPage";
@@ -72,10 +73,15 @@ function App() {
           path="/admin/showtimes/new"
           element={<AddShowtimePage />}
         />
+          <Route
+            path="/admin/theaters"
+            element={<TheaterManagementPage />}
+          />
         </Routes>
-      </main>
+      
 
       <Footer />
+      </main>
     </BrowserRouter>
   );
 }

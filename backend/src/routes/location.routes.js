@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get('/cities', getCities);
 router.get('/theaters', getTheatersByCity);
-router.get('/theaters/:theaterId', getTheaterDetails);
-router.get('/theaters/:theaterId/rooms', getRoomsByTheater);
+router.get('/:theaterId', getTheaterDetails);
+router.get('/:theaterId/rooms', getRoomsByTheater);
 
 export default router;

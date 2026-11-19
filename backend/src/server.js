@@ -99,7 +99,7 @@ app.get("/api/health", async (_req, res) => {
 app.use("/api/movies", movieRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
-app.use('/api/locations', locationRoutes);
+app.use('/api/theaters', locationRoutes);
 // Start server
 app.listen(PORT, () => {
   console.log(`RIO Cinema API listening at http://localhost:${PORT}`);

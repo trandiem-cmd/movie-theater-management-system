@@ -1,8 +1,11 @@
 
-/* ================================
-   THEATER PAGE
-================================ */
-
+.page-container {
+  width: min(
+    var(--content-max-width),
+    calc(100% - 2 * var(--page-padding))
+  );
+  margin: 0 auto;
+}
 .theater-page {
   --cinema-bg: #101014;
   --cinema-card: #19191f;
