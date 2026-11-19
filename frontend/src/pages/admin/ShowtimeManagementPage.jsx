@@ -4,6 +4,11 @@ import { useNavigate } from "react-router-dom";
 import AdminSidebar from "./adminSidebar";
 import { formatDate } from "../../utils/date";
 import "./ShowtimeManagementPage.css";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
 const SHOWTIMES_API = "/api/admin/showtimes";
 const PAGE_SIZE = 5;
@@ -183,7 +188,8 @@ export default function ShowtimeManagementPage() {
               className="showtime-add-button"
               onClick={() => navigate("/admin/showtimes/new")}
             >
-              + Add Showtime
+              <Plus size={18} />
+                  Add Showtime
             </button>
           </div>
 
@@ -302,23 +308,50 @@ export default function ShowtimeManagementPage() {
                             </span>
                           </td>
 
+
                           <td>
-                            {showtime.status === "scheduled" ? (
-                              <button
-                                type="button"
-                                className="showtime-cancel-action"
-                                onClick={() => handleCancel(showtime)}
-                                disabled={
-                                  cancellingId === showtime.showtime_id
-                                }
-                              >
-                                {cancellingId === showtime.showtime_id
-                                  ? "Cancelling..."
-                                  : "Cancel"}
-                              </button>
-                            ) : (
-                              <span className="showtime-no-action">—</span>
-                            )}
+                            <div className="showtime-actions">
+                              {(showtime.status === "scheduled" ||
+                                showtime.status === "cancelled") && (
+                                <button
+                                  type="button"
+                                  className="showtime-icon-button edit-icon"
+                                  title={
+                                    showtime.status === "cancelled"
+                                      ? "Reschedule showtime"
+                                      : "Edit showtime"
+                                  }
+                                  aria-label={
+                                    showtime.status === "cancelled"
+                                      ? "Reschedule showtime"
+                                      : "Edit showtime"
+                                  }
+                                  onClick={() =>
+                                    navigate(`/admin/showtimes/new?id=${showtime.showtime_id}`)
+                                  }
+                                >
+                                  <Pencil size={17} />
+                                </button>
+                              )}
+
+                              {showtime.status === "scheduled" && (
+                                <button
+                                  type="button"
+                                  className="showtime-icon-button delete-icon"
+                                  title="Cancel showtime"
+                                  aria-label="Cancel showtime"
+                                  onClick={() => handleCancel(showtime)}
+                                  disabled={cancellingId === showtime.showtime_id}
+                                >
+                                  <Trash2 size={17} />
+                                </button>
+                              )}
+
+                              {showtime.status !== "scheduled" &&
+                                showtime.status !== "cancelled" && (
+                                  <span className="showtime-no-action">—</span>
+                                )}
+                            </div>
                           </td>
                         </tr>
                       ))}

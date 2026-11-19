@@ -355,6 +355,49 @@
   cursor: not-allowed;
 }
 
+.showtime-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.showtime-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.edit-icon {
+  color: #d4af37;
+  border: 1px solid #d4af37;
+}
+
+.edit-icon:hover {
+  background: #d4af37;
+  color: #111;
+}
+
+.delete-icon {
+  color: #e57373;
+  border: 1px solid #e57373;
+}
+
+.delete-icon:hover {
+  background: #e57373;
+  color: #111;
+}
+
+.showtime-icon-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Responsive design */
 
 @media (max-width: 1000px) {

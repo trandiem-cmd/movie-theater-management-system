@@ -1,6 +1,5 @@
-
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import AdminSidebar from "./adminSidebar";
 import "./AddShowtimePage.css";
 
@@ -99,6 +98,9 @@ function getList(payload) {
 
 export default function AddShowtimePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get("id");
+  const isEditing = Boolean(editId);
 
   const [form, setForm] = useState({
     ...emptyForm,
@@ -114,56 +116,121 @@ export default function AddShowtimePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  useEffect(() => {
-    async function loadOptions() {
-      try {
-        setLoading(true);
-        setError("");
+ 
+useEffect(() => {
+  async function loadOptions() {
+    try {
+      setLoading(true);
+      setError("");
 
-        const [movieResponse, roomResponse] = await Promise.all([
+      const [movieResponse, roomResponse, showtimeResponse] =
+        await Promise.all([
           fetch(`${API_BASE}/movies?page=1&limit=100`, {
             credentials: "include",
           }),
           fetch(`${API_BASE}/rooms`, {
             credentials: "include",
           }),
+          editId
+            ? fetch(`${API_BASE}/showtimes`, {
+                credentials: "include",
+              })
+            : Promise.resolve(null),
         ]);
 
-        if (movieResponse.status === 401 || roomResponse.status === 401) {
-          navigate("/login");
-          return;
+      const responses = [
+        movieResponse,
+        roomResponse,
+        ...(showtimeResponse ? [showtimeResponse] : []),
+      ];
+
+      if (responses.some((response) => response.status === 401)) {
+        navigate("/login");
+        return;
+      }
+
+      if (responses.some((response) => response.status === 403)) {
+        setError("You do not have permission to access this page.");
+        return;
+      }
+
+      if (responses.some((response) => !response.ok)) {
+        throw new Error("Could not load the showtime form data.");
+      }
+
+      const moviePayload = await movieResponse.json();
+      const roomPayload = await roomResponse.json();
+
+      const allMovies = getList(moviePayload);
+      const allRooms = getList(roomPayload);
+
+      let currentShowtime = null;
+
+      if (editId) {
+        const showtimePayload = await showtimeResponse.json();
+
+        currentShowtime = getList(showtimePayload).find(
+          (item) => String(item.showtime_id) === String(editId)
+        );
+
+        if (!currentShowtime) {
+          throw new Error("Showtime not found.");
         }
 
-        if (movieResponse.status === 403 || roomResponse.status === 403) {
-          setError("You do not have permission to access this page.");
-          return;
-        }
-
-        if (!movieResponse.ok || !roomResponse.ok) {
+        if (
+          currentShowtime.status !== "scheduled" &&
+          currentShowtime.status !== "cancelled"
+        ) {
           throw new Error(
-            "Could not load movies or auditoriums. Please check the admin API."
+            "Only scheduled or cancelled showtimes can be edited."
           );
         }
-
-        const moviePayload = await movieResponse.json();
-        const roomPayload = await roomResponse.json();
-
-        setMovies(getList(moviePayload).filter(
-          (movie) => movie.status !== "ended"
-        ));
-
-        setRooms(getList(roomPayload).filter(
-          (room) => room.status === "active"
-        ));
-      } catch (err) {
-        setError(err.message || "Something went wrong while loading the form.");
-      } finally {
-        setLoading(false);
       }
-    }
 
-    loadOptions();
-  }, [navigate]);
+      setMovies(
+        allMovies.filter(
+          (movie) =>
+            movie.status !== "ended" ||
+            String(movie.movie_id) === String(currentShowtime?.movie_id)
+        )
+      );
+
+        setRooms(
+          allRooms.filter(
+            (room) =>
+              room.status === "active" ||
+              String(room.room_id) === String(currentShowtime?.room_id)
+          )
+        );
+
+      if (currentShowtime) {
+        const start = getHelsinkiParts(
+          new Date(currentShowtime.start_time)
+        );
+
+        const end = getHelsinkiParts(
+          new Date(currentShowtime.end_time)
+        );
+
+        setForm({
+          city: currentShowtime.city,
+          room_id: String(currentShowtime.room_id),
+          movie_id: String(currentShowtime.movie_id),
+          date: `${start.year}-${start.month}-${start.day}`,
+          start_time: `${start.hour}:${start.minute}`,
+          end_time: `${end.hour}:${end.minute}`,
+          base_price: Number(currentShowtime.base_price).toFixed(2),
+        });
+      }
+    } catch (err) {
+      setError(err.message || "Could not load the showtime form.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  loadOptions();
+}, [navigate, editId]);
 
   const locations = useMemo(() => {
     return [...new Set(rooms.map((room) => room.city).filter(Boolean))].sort();
@@ -234,20 +301,41 @@ export default function AddShowtimePage() {
     try {
       setSaving(true);
 
-      const payload = {
-        movie_id: Number(form.movie_id),
-        room_id: Number(form.room_id),
-        start_time: helsinkiToISOString(form.date, form.start_time),
-        end_time: helsinkiToISOString(form.date, form.end_time),
-        base_price: Number(form.base_price),
-      };
+          const startDateTime = helsinkiToISOString(
+            form.date,
+            form.start_time
+          );
 
-      const response = await fetch(`${API_BASE}/showtimes`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+          const endDateTime = helsinkiToISOString(
+            form.date,
+            form.end_time
+          );
+
+          // Prevent scheduling in the past.
+          if (new Date(startDateTime).getTime() <= Date.now()) {
+            setError("Please select a future date and time.");
+            return;
+          }
+
+          const payload = {
+            movie_id: Number(form.movie_id),
+            room_id: Number(form.room_id),
+            start_time: startDateTime,
+            end_time: endDateTime,
+            base_price: Number(form.base_price),
+          };
+
+        const response = await fetch(
+          isEditing
+            ? `${API_BASE}/showtimes/${editId}`
+            : `${API_BASE}/showtimes`,
+          {
+            method: isEditing ? "PUT" : "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }
+        );
 
       const result = await response.json();
 
@@ -257,14 +345,20 @@ export default function AddShowtimePage() {
       }
 
       if (response.status === 403) {
-        throw new Error("You do not have permission to add showtimes.");
+        throw new Error(
+        `You do not have permission to ${isEditing ? "edit" : "add"} showtimes.`
+      );
       }
 
       if (!response.ok || result.success === false) {
         throw new Error(result.message || "Could not save the showtime.");
       }
 
-      setSuccess("Showtime added successfully.");
+      setSuccess(
+      isEditing
+        ? "Showtime updated successfully."
+        : "Showtime added successfully."
+      );
       setTimeout(() => navigate("/admin/showtimes"), 900);
     } catch (err) {
       setError(err.message || "Could not save the showtime.");
@@ -275,18 +369,12 @@ export default function AddShowtimePage() {
 
   return (
     <div className="admin-page add-showtime-page">
-      <header className="admin-header">
-        <div className="admin-logo">RIO</div>
-        <span className="admin-header-title">Showtime management</span>
-        <span className="admin-header-user">♙ Admin</span>
-      </header>
-
       <div className="admin-layout">
         <AdminSidebar />
 
         <main className="admin-main add-showtime-main">
           <form className="add-showtime-form" onSubmit={handleSubmit}>
-            <h2>Add Showtime</h2>
+            <h2>{isEditing ? "Edit Showtime" : "Add Showtime"}</h2>
 
             {error && <p className="showtime-message error">{error}</p>}
             {success && <p className="showtime-message success">{success}</p>}
@@ -343,24 +431,26 @@ export default function AddShowtimePage() {
                 </select>
 
                 <label htmlFor="date">Enter Date</label>
-                <input
-                  id="date"
-                  name="date"
-                  type="date"
-                  value={form.date}
-                  onChange={updateField}
-                  required
-                />
+                    <input
+                      id="date"
+                      name="date"
+                      type="date"
+                      min={getHelsinkiDate()}
+                      value={form.date}
+                      onChange={updateField}
+                      required
+                    />
 
                 <label htmlFor="start_time">Enter Start Time</label>
-                <input
-                  id="start_time"
-                  name="start_time"
-                  type="time"
-                  value={form.start_time}
-                  onChange={updateField}
-                  required
-                />
+                    <input
+                      id="start_time"
+                      name="start_time"
+                      type="time"
+                      min={form.date === getHelsinkiDate() ? getHelsinkiTime() : undefined}
+                      value={form.start_time}
+                      onChange={updateField}
+                      required
+                    />
 
                 <label htmlFor="end_time">Enter End Time</label>
                 <input
@@ -404,7 +494,9 @@ export default function AddShowtimePage() {
                     className="showtime-save-button"
                     disabled={saving}
                   >
-                    {saving ? "Saving..." : "Save"}
+                    {saving
+                       ? isEditing ? "Updating..." : "Saving..."
+                       : isEditing ? "Update" : "Save"}
                   </button>
                 </div>
               </>

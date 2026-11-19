@@ -140,3 +140,36 @@ export const getRoomsByTheater = async (req, res) => {
     });
   }
 };
+
+// Get all rooms for Admin Showtime Management
+export const getAdminRooms = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        r.room_id,
+        r.theater_id,
+        r.name,
+        r.capacity,
+        r.status,
+        t.name AS theater_name,
+        t.city
+      FROM rooms r
+      JOIN theaters t ON t.theater_id = r.theater_id
+      WHERE t.status = 'active'
+      ORDER BY t.city ASC, t.name ASC, r.name ASC
+    `);
+
+    return res.status(200).json({
+      success: true,
+      count: result.rows.length,
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error('Error fetching admin rooms:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch rooms',
+    });
+  }
+};

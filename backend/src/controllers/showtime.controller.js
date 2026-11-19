@@ -14,10 +14,18 @@ export async function createShowtime(req, res) {
   }
 
   const showtime = validation.value;
-  const client = await pool.connect();
 
-  try {
-    await client.query("BEGIN");
+  // Prevent creating showtimes in the past.
+  if (new Date(showtime.start_time).getTime() <= Date.now()) {
+    return res.status(400).json({
+      success: false,
+      message: "Showtime must be scheduled for a future date and time.",
+    });
+  }
+
+  const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
 
     // Lock the room row to serialize schedule changes for this room.
     const roomResult = await client.query(
@@ -166,12 +174,15 @@ export async function updateShowtime(req, res) {
 
     const existing = existingResult.rows[0];
 
-    if (existing.status !== "scheduled") {
+    if (
+      existing.status !== "scheduled" &&
+      existing.status !== "cancelled"
+    ) {
       await client.query("ROLLBACK");
 
       return res.status(409).json({
         success: false,
-        message: "Only scheduled showtimes can be updated",
+        message: "Only scheduled or cancelled showtimes can be updated",
       });
     }
 
@@ -182,7 +193,15 @@ export async function updateShowtime(req, res) {
       end_time: validation.value.end_time ?? existing.end_time,
       base_price: validation.value.base_price ?? existing.base_price,
     };
+    // Prevent editing or rescheduling to a past date or time.
+    if (new Date(showtime.start_time).getTime() <= Date.now()) {
+      await client.query("ROLLBACK");
 
+      return res.status(400).json({
+        success: false,
+        message: "Showtime must be scheduled for a future date and time.",
+      });
+    }
     if (
       new Date(showtime.end_time) <= new Date(showtime.start_time)
     ) {
@@ -279,14 +298,16 @@ export async function updateShowtime(req, res) {
     }
 
     const result = await client.query(
-      `UPDATE showtimes
-       SET movie_id = $1,
-           room_id = $2,
-           start_time = $3,
-           end_time = $4,
-           base_price = $5
-       WHERE showtime_id = $6
-       RETURNING *`,
+        `UPDATE showtimes
+        SET movie_id = $1,
+            room_id = $2,
+            start_time = $3,
+            end_time = $4,
+            base_price = $5,
+            status = 'scheduled'
+        WHERE showtime_id = $6
+        RETURNING *`,
+
       [
         showtime.movie_id,
         showtime.room_id,
@@ -438,6 +459,63 @@ export async function getAdminShowtimes(req, res) {
     return res.status(500).json({
       success: false,
       message: "Failed to retrieve showtimes",
+    });
+  }
+}
+
+/* Get customer showtimes */
+export async function getCustomerShowtimes(req, res) {
+  try {
+    const movieId = Number(req.params.id);
+
+    if (!Number.isSafeInteger(movieId) || movieId <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid movie ID.",
+      });
+    }
+
+    const result = await pool.query(
+      `
+        SELECT
+          s.showtime_id,
+          s.movie_id,
+          s.start_time,
+          s.end_time,
+          s.base_price,
+          s.status,
+          r.room_id,
+          r.name AS room_name,
+          t.theater_id,
+          t.name AS theater_name,
+          t.city
+        FROM showtimes s
+        JOIN rooms r
+          ON s.room_id = r.room_id
+        JOIN theaters t
+          ON r.theater_id = t.theater_id
+        WHERE s.movie_id = $1
+          AND s.status = 'scheduled'
+          AND s.start_time > NOW()
+          AND (s.start_time AT TIME ZONE 'Europe/Helsinki')::date
+              >= (NOW() AT TIME ZONE 'Europe/Helsinki')::date
+          AND (s.start_time AT TIME ZONE 'Europe/Helsinki')::date
+              < (NOW() AT TIME ZONE 'Europe/Helsinki')::date + 7
+        ORDER BY s.start_time ASC
+      `,
+      [movieId]
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error("Get customer showtimes error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Could not load showtimes.",
     });
   }
 }
