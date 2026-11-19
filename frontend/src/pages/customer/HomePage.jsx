@@ -41,9 +41,14 @@ function HomePage() {
   const [activeSlide, setActiveSlide] = useState(0);
 
   const [selectedMovie, setSelectedMovie] = useState("");
-  const [selectedTheater, setSelectedTheater] = useState("Oulu");
+  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedRoom, setSelectedRoom] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [selectedShowtime, setSelectedShowtime] = useState("");
 
+  const [showtimes, setShowtimes] = useState([]);
+  const [showtimeLoading, setShowtimeLoading] = useState(false);
+  const [showtimeError, setShowtimeError] = useState("");
   const [movies, setMovies] = useState([]);
   const [apiLoading, setApiLoading] = useState(true);
   const [apiError, setApiError] = useState("");
@@ -144,7 +149,92 @@ function HomePage() {
       behavior: "smooth",
     });
   }
+  useEffect(() => {
+    if (!selectedMovie) {
+      setShowtimes([]);
+      setSelectedCity("");
+      setSelectedRoom("");
+      setSelectedShowtime("");
+      return;
+    }
 
+    let cancelled = false;
+
+    async function fetchShowtimes() {
+      try {
+        setShowtimeLoading(true);
+        setShowtimeError("");
+
+        setShowtimes([]);
+        setSelectedRoom("");
+        setSelectedShowtime("");
+
+        const response = await fetch(
+          `http://localhost:3001/api/movies/${selectedMovie}/showtimes`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to load showtimes.");
+        }
+
+        const result = await response.json();
+
+        if (!cancelled) {
+          setShowtimes(result.data || []);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setShowtimeError(error.message);
+        }
+      } finally {
+        if (!cancelled) {
+          setShowtimeLoading(false);
+        }
+      }
+    }
+
+    fetchShowtimes();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedMovie]);
+  const availableCities = [
+    ...new Set(showtimes.map((item) => item.city).filter(Boolean)),
+  ];
+
+  const availableRooms = [
+    ...new Map(
+      showtimes
+        .filter((item) => item.city === selectedCity)
+        .map((item) => [
+          item.room_id,
+          {
+            room_id: item.room_id,
+            room_name: item.room_name,
+          },
+        ])
+    ).values(),
+  ];
+
+  const dailyShowtimes = showtimes.filter((item) => {
+    if (!selectedCity || !selectedRoom || !selectedDate) {
+      return false;
+    }
+
+    const showtimeDate = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Europe/Helsinki",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(item.start_time));
+
+    return (
+      item.city === selectedCity &&
+      String(item.room_id) === String(selectedRoom) &&
+      showtimeDate === selectedDate
+    );
+  });
   return (
     <div className="home-page">
       <div className="page-container">
@@ -240,88 +330,164 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Booking bar */}
-      <section className="home-booking-bar">
-        <div className="home-booking-field">
-          <label htmlFor="home-movie-select">
-            <Film size={17} />
-            1. Choose a movie
-          </label>
 
-          <select
-            id="home-movie-select"
-            value={selectedMovie}
-            onChange={(event) =>
-              setSelectedMovie(event.target.value)
-            }
-          >
-            <option value="">Select a movie</option>
+    {/* Booking bar */}
+    <section className="home-booking-bar">
+      {/* Movie */}
+      <div className="home-booking-field">
+        <label htmlFor="home-movie-select">
+          <Film size={17} />
+          1. Choose a movie
+        </label>
 
-            {movies.map((movie) => (
-              <option key={movie.id} value={movie.title}>
-                {movie.title}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="home-booking-field">
-          <label htmlFor="home-theater-select">
-            <MapPin size={17} />
-            2. Choose a theatre
-          </label>
-
-          <select
-            id="home-theater-select"
-            value={selectedTheater}
-            onChange={(event) =>
-              setSelectedTheater(event.target.value)
-            }
-          >
-            <option value="Oulu">Oulu</option>
-            <option value="Tampere">Tampere</option>
-          </select>
-        </div>
-
-        <div className="home-booking-field">
-          <label htmlFor="home-date-select">
-            <CalendarDays size={17} />
-            3. Select a date
-          </label>
-
-          <input
-            id="home-date-select"
-            type="date"
-            value={selectedDate}
-            onChange={(event) =>
-              setSelectedDate(event.target.value)
-            }
-          />
-        </div>
-
-        <div className="home-booking-field">
-          <label htmlFor="home-showtime-select">
-            <Clock3 size={17} />
-            4. Select a showtime
-          </label>
-
-          <select
-            id="home-showtime-select"
-            defaultValue=""
-          >
-            <option value="">Select a showtime</option>
-          </select>
-        </div>
-
-        <button
-          type="button"
-          className="home-find-ticket"
-          disabled
-          title="Ticket booking is not available yet"
+        <select
+          id="home-movie-select"
+          value={selectedMovie}
+          onChange={(event) => {
+            setSelectedMovie(event.target.value);
+            setSelectedCity("");
+            setSelectedRoom("");
+            setSelectedShowtime("");
+          }}
         >
-          Find a ticket →
-        </button>
-      </section>
+          <option value="">Select a movie</option>
+
+          {movies.map((movie) => (
+            <option key={movie.id} value={movie.id}>
+              {movie.title}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Cinema location */}
+      <div className="home-booking-field">
+        <label htmlFor="home-city-select">
+          <MapPin size={17} />
+          2. Choose cinema location
+        </label>
+
+        <select
+          id="home-city-select"
+          value={selectedCity}
+          onChange={(event) => {
+            setSelectedCity(event.target.value);
+            setSelectedRoom("");
+            setSelectedShowtime("");
+          }}
+          disabled={!selectedMovie || showtimeLoading}
+        >
+          <option value="">Select location</option>
+
+          {availableCities.map((city) => (
+            <option key={city} value={city}>
+              {city}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Auditorium */}
+      <div className="home-booking-field">
+        <label htmlFor="home-room-select">
+          <Film size={17} />
+          3. Choose auditorium
+        </label>
+
+        <select
+          id="home-room-select"
+          value={selectedRoom}
+          onChange={(event) => {
+            setSelectedRoom(event.target.value);
+            setSelectedShowtime("");
+          }}
+          disabled={!selectedCity}
+        >
+          <option value="">Select auditorium</option>
+
+          {availableRooms.map((room) => (
+            <option key={room.room_id} value={room.room_id}>
+              {room.room_name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Date */}
+      <div className="home-booking-field">
+        <label htmlFor="home-date-select">
+          <CalendarDays size={17} />
+          4. Select a date
+        </label>
+
+        <input
+          id="home-date-select"
+          type="date"
+          min={new Intl.DateTimeFormat("en-CA", {
+            timeZone: "Europe/Helsinki",
+          }).format(new Date())}
+          value={selectedDate}
+          onChange={(event) => {
+            setSelectedDate(event.target.value);
+            setSelectedShowtime("");
+          }}
+          disabled={!selectedRoom}
+        />
+      </div>
+
+      {/* Showtime */}
+      <div className="home-booking-field">
+        <label htmlFor="home-showtime-select">
+          <Clock3 size={17} />
+          5. Select a showtime
+        </label>
+
+        <select
+          id="home-showtime-select"
+          value={selectedShowtime}
+          onChange={(event) =>
+            setSelectedShowtime(event.target.value)
+          }
+          disabled={!selectedDate || !selectedRoom || showtimeLoading}
+        >
+          <option value="">Select a showtime</option>
+
+          {dailyShowtimes.map((showtime) => (
+            <option
+              key={showtime.showtime_id}
+              value={showtime.showtime_id}
+            >
+              {new Date(showtime.start_time).toLocaleTimeString(
+                "en-GB",
+                {
+                  timeZone: "Europe/Helsinki",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }
+              )}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {showtimeLoading && (
+        <p className="home-empty-message">Loading showtimes...</p>
+      )}
+
+      {showtimeError && (
+        <p className="home-empty-message">{showtimeError}</p>
+      )}
+
+      <button
+        type="button"
+        className="home-find-ticket"
+        disabled={!selectedShowtime}
+        onClick={() => window.location.href = "/BookingPage.jsx"}
+      >
+        Find a ticket →
+      </button>
+    </section>
+
 
       
       <section className="home-movies-section">

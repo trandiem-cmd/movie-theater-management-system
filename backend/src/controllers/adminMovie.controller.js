@@ -1,11 +1,6 @@
 
 import pool from "../config/database.js";
 import { validateMovie } from "../validators/movie.validator.js";
-import {
-  createShowtime,
-  updateShowtime,
-  cancelShowtime,
-} from "../controllers/showtime.controller.js";
 
 // GET /api/admin/movies
 export async function getAdminMovies(req, res) {
