@@ -9,6 +9,7 @@ import pool from "./config/database.js";
 import authRoutes from "./routes/auth.routes.js";
 import movieRoutes from "./routes/movie.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import locationRoutes from './routes/location.routes.js';
 
 dotenv.config();
 
@@ -98,7 +99,7 @@ app.get("/api/health", async (_req, res) => {
 app.use("/api/movies", movieRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
-
+app.use('/api/theaters', locationRoutes);
 // Start server
 app.listen(PORT, () => {
   console.log(`RIO Cinema API listening at http://localhost:${PORT}`);

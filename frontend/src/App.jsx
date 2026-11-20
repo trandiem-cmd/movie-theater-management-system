@@ -6,6 +6,7 @@ import Header from "./components/common/Header";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 
 import MovieManagementPage from "./pages/admin/MovieManagementPage";
+import TheaterManagementPage from "./pages/admin/TheaterManagementPage";
 
 import HomePage from "./pages/customer/HomePage";
 import MovieListPage from "./pages/customer/MovieListPage";
@@ -17,6 +18,7 @@ import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import VerifyResetOtpPage from "./pages/auth/VerifyResetOtpPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import ProfilePage from "./pages/auth/ProfilePage";
+import TheaterListPage from "./pages/customer/TheaterListPage";
 
 import "./App.css";
 import { Omega } from "lucide-react";
@@ -32,7 +34,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/movies" element={<MovieListPage />} />
           <Route path="/movies/:id" element={<MovieDetailPage />} />
-
+          <Route path="/theaters" element={<TheaterListPage />} />
           {/* Authentication */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -59,10 +61,15 @@ function App() {
             path="/admin/movies"
             element={<MovieManagementPage />}
           />
+          <Route
+            path="/admin/theaters"
+            element={<TheaterManagementPage />}
+          />
         </Routes>
-      </main>
+      
 
       <Footer />
+      </main>
     </BrowserRouter>
   );
 }

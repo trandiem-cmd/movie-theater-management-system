@@ -147,7 +147,7 @@ function HomePage() {
 
   return (
     <div className="home-page">
-      
+      <div className="page-container">
       <section
         className="home-hero"
         style={{
@@ -392,6 +392,7 @@ function HomePage() {
           </p>
         )}
       </section>
+      </div>
     </div>
   );
 }
