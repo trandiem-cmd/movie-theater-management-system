@@ -165,7 +165,7 @@ const rooms = useMemo(() => {
 const dailyShowtimes = useMemo(() => {
   return showtimes.filter(
     (showtime) =>
-      getShowtimeDate(showtime.start_time) === selectedDate &&
+      getShowtimeDate(showtime.door_open_time) === selectedDate &&
       showtime.city === selectedCity &&
       String(showtime.room_id) === String(selectedRoom)
   );
@@ -309,7 +309,7 @@ function handleRoomChange(event) {
                     onClick={() => setSelectedShowtime(showtime)}
                   >
                     <Clock3 size={16} />
-                    {formatShowtimeTime(showtime.start_time)}
+                    {formatShowtimeTime(showtime.door_open_time)}
                   </button>
                 ))}
               </div>
@@ -332,10 +332,25 @@ function handleRoomChange(event) {
                   </p>
 
                   <p>
-                    <strong>Time:</strong>{" "}
+                    <strong>Doors open:</strong>{" "}
+                    {formatShowtimeTime(selectedShowtime.door_open_time)}
+                  </p>
+
+                  <p>
+                    <strong>Advertisements start:</strong>{" "}
                     {formatShowtimeTime(
-                      selectedShowtime.start_time
+                      selectedShowtime.advertisement_start_time
                     )}
+                  </p>
+
+                  <p>
+                    <strong>Movie starts:</strong>{" "}
+                    {formatShowtimeTime(selectedShowtime.start_time)}
+                  </p>
+
+                  <p>
+                    <strong>Movie ends:</strong>{" "}
+                    {formatShowtimeTime(selectedShowtime.end_time)}
                   </p>
 
                   <p>

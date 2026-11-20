@@ -15,17 +15,18 @@ export async function createShowtime(req, res) {
 
   const showtime = validation.value;
 
-  // Prevent creating showtimes in the past.
-  if (new Date(showtime.start_time).getTime() <= Date.now()) {
+  // Prevent creating showtimes with door-opening times in the past.
+  if (new Date(showtime.door_open_time).getTime() <= Date.now()) {
     return res.status(400).json({
       success: false,
-      message: "Showtime must be scheduled for a future date and time.",
+      message: "Door-opening time must be scheduled for a future date and time.",
     });
   }
 
   const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
+
+  try {
+    await client.query("BEGIN");
 
     // Lock the room row to serialize schedule changes for this room.
     const roomResult = await client.query(
@@ -46,9 +47,9 @@ export async function createShowtime(req, res) {
       });
     }
 
-    // Check that the selected movie exists.
+    // Get the selected movie and its duration.
     const movieResult = await client.query(
-      `SELECT movie_id
+      `SELECT movie_id, duration
        FROM movies
        WHERE movie_id = $1`,
       [showtime.movie_id]
@@ -63,19 +64,41 @@ export async function createShowtime(req, res) {
       });
     }
 
-    // Prevent overlapping scheduled showtimes in the same room.
+    const movieDuration = Number(movieResult.rows[0].duration);
+
+    if (!Number.isFinite(movieDuration) || movieDuration <= 0) {
+      await client.query("ROLLBACK");
+
+      return res.status(400).json({
+        success: false,
+        message: "The selected movie has an invalid duration.",
+      });
+    }
+
+    // Calculate actual movie start and end times.
+    const doorOpenTime = new Date(showtime.door_open_time);
+
+    const movieStartTime = new Date(
+      doorOpenTime.getTime() + 27 * 60 * 1000
+    );
+
+    const movieEndTime = new Date(
+      movieStartTime.getTime() + movieDuration * 60 * 1000
+    );
+
+    // Check conflicts from door opening until movie end.
     const conflictResult = await client.query(
       `SELECT showtime_id
        FROM showtimes
        WHERE room_id = $1
        AND status = 'scheduled'
-       AND start_time < $3::timestamptz
+       AND door_open_time < $3::timestamptz
        AND end_time > $2::timestamptz
        LIMIT 1`,
       [
         showtime.room_id,
-        showtime.start_time,
-        showtime.end_time,
+        showtime.door_open_time,
+        movieEndTime.toISOString(),
       ]
     );
 
@@ -89,21 +112,24 @@ export async function createShowtime(req, res) {
       });
     }
 
+    // Insert the complete screening schedule.
     const result = await client.query(
       `INSERT INTO showtimes (
         movie_id,
         room_id,
+        door_open_time,
         start_time,
         end_time,
         base_price
       )
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING *`,
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
       [
         showtime.movie_id,
         showtime.room_id,
-        showtime.start_time,
-        showtime.end_time,
+        showtime.door_open_time,
+        movieStartTime.toISOString(),
+        movieEndTime.toISOString(),
         showtime.base_price,
       ]
     );
@@ -128,6 +154,7 @@ export async function createShowtime(req, res) {
     client.release();
   }
 }
+
 
 // PUT /api/admin/showtimes/:id
 export async function updateShowtime(req, res) {
@@ -154,7 +181,7 @@ export async function updateShowtime(req, res) {
   try {
     await client.query("BEGIN");
 
-    // Read the existing showtime.
+    // Read and lock the existing showtime.
     const existingResult = await client.query(
       `SELECT *
        FROM showtimes
@@ -186,35 +213,27 @@ export async function updateShowtime(req, res) {
       });
     }
 
+    // Use submitted values or keep the existing values.
     const showtime = {
       movie_id: validation.value.movie_id ?? existing.movie_id,
       room_id: validation.value.room_id ?? existing.room_id,
-      start_time: validation.value.start_time ?? existing.start_time,
-      end_time: validation.value.end_time ?? existing.end_time,
+      door_open_time:
+        validation.value.door_open_time ??
+        existing.door_open_time,
       base_price: validation.value.base_price ?? existing.base_price,
     };
-    // Prevent editing or rescheduling to a past date or time.
-    if (new Date(showtime.start_time).getTime() <= Date.now()) {
+
+    // Prevent editing or rescheduling to a past door-opening time.
+    if (new Date(showtime.door_open_time).getTime() <= Date.now()) {
       await client.query("ROLLBACK");
 
       return res.status(400).json({
         success: false,
-        message: "Showtime must be scheduled for a future date and time.",
-      });
-    }
-    if (
-      new Date(showtime.end_time) <= new Date(showtime.start_time)
-    ) {
-      await client.query("ROLLBACK");
-
-      return res.status(400).json({
-        success: false,
-        message: "end_time must be later than start_time",
+        message: "Door-opening time must be scheduled for a future date and time.",
       });
     }
 
-    // Lock the target room. When changing rooms, also lock the old room
-    // so other schedule updates cannot race against this operation.
+    // Lock old and new rooms in a consistent order.
     const roomIds = [...new Set([existing.room_id, showtime.room_id])]
       .sort((a, b) => a - b);
 
@@ -237,6 +256,7 @@ export async function updateShowtime(req, res) {
       }
     }
 
+    // Ensure the target room is active.
     const targetRoom = await client.query(
       `SELECT room_id
        FROM rooms
@@ -254,8 +274,9 @@ export async function updateShowtime(req, res) {
       });
     }
 
+    // Get the selected movie and its duration.
     const movieResult = await client.query(
-      `SELECT movie_id
+      `SELECT movie_id, duration
        FROM movies
        WHERE movie_id = $1`,
       [showtime.movie_id]
@@ -270,20 +291,43 @@ export async function updateShowtime(req, res) {
       });
     }
 
+    const movieDuration = Number(movieResult.rows[0].duration);
+
+    if (!Number.isFinite(movieDuration) || movieDuration <= 0) {
+      await client.query("ROLLBACK");
+
+      return res.status(400).json({
+        success: false,
+        message: "The selected movie has an invalid duration.",
+      });
+    }
+
+    // Recalculate actual movie start and end times.
+    const doorOpenTime = new Date(showtime.door_open_time);
+
+    const movieStartTime = new Date(
+      doorOpenTime.getTime() + 27 * 60 * 1000
+    );
+
+    const movieEndTime = new Date(
+      movieStartTime.getTime() + movieDuration * 60 * 1000
+    );
+
+    // Check for conflicts, excluding the showtime being edited.
     const conflictResult = await client.query(
       `SELECT showtime_id
        FROM showtimes
        WHERE room_id = $1
        AND showtime_id <> $2
        AND status = 'scheduled'
-       AND start_time < $4::timestamptz
+       AND door_open_time < $4::timestamptz
        AND end_time > $3::timestamptz
        LIMIT 1`,
       [
         showtime.room_id,
         id,
-        showtime.start_time,
-        showtime.end_time,
+        showtime.door_open_time,
+        movieEndTime.toISOString(),
       ]
     );
 
@@ -297,22 +341,24 @@ export async function updateShowtime(req, res) {
       });
     }
 
+    // Update the complete screening schedule.
     const result = await client.query(
-        `UPDATE showtimes
-        SET movie_id = $1,
-            room_id = $2,
-            start_time = $3,
-            end_time = $4,
-            base_price = $5,
-            status = 'scheduled'
-        WHERE showtime_id = $6
-        RETURNING *`,
-
+      `UPDATE showtimes
+       SET movie_id = $1,
+           room_id = $2,
+           door_open_time = $3,
+           start_time = $4,
+           end_time = $5,
+           base_price = $6,
+           status = 'scheduled'
+       WHERE showtime_id = $7
+       RETURNING *`,
       [
         showtime.movie_id,
         showtime.room_id,
-        showtime.start_time,
-        showtime.end_time,
+        showtime.door_open_time,
+        movieStartTime.toISOString(),
+        movieEndTime.toISOString(),
         showtime.base_price,
         id,
       ]
@@ -338,6 +384,7 @@ export async function updateShowtime(req, res) {
     client.release();
   }
 }
+
 
 // DELETE /api/admin/showtimes/:id
 // Cancellation is a status update, not a physical deletion.
@@ -422,9 +469,22 @@ export async function cancelShowtime(req, res) {
   }
 }
 
+
+
 // GET /api/admin/showtimes
 export async function getAdminShowtimes(req, res) {
   try {
+    // Mark showtimes from previous Helsinki calendar days as completed.
+    // Cancelled and already completed showtimes are not changed.
+    await pool.query(
+      `UPDATE showtimes
+       SET status = 'completed'
+       WHERE status = 'scheduled'
+       AND (door_open_time AT TIME ZONE 'Europe/Helsinki')::date
+           < (NOW() AT TIME ZONE 'Europe/Helsinki')::date`
+    );
+
+    // Retrieve all showtimes, including completed and cancelled ones.
     const result = await pool.query(
       `SELECT
          s.showtime_id,
@@ -436,6 +496,9 @@ export async function getAdminShowtimes(req, res) {
          t.theater_id,
          t.name AS theater_name,
          t.city,
+         s.door_open_time,
+         s.door_open_time + INTERVAL '15 minutes'
+           AS advertisement_start_time,
          s.start_time,
          s.end_time,
          s.base_price,
@@ -445,7 +508,7 @@ export async function getAdminShowtimes(req, res) {
        JOIN movies m ON s.movie_id = m.movie_id
        JOIN rooms r ON s.room_id = r.room_id
        JOIN theaters t ON r.theater_id = t.theater_id
-       ORDER BY s.start_time ASC`
+       ORDER BY s.door_open_time ASC`
     );
 
     return res.status(200).json({
@@ -462,6 +525,7 @@ export async function getAdminShowtimes(req, res) {
     });
   }
 }
+
 
 /* Get customer showtimes */
 export async function getCustomerShowtimes(req, res) {
@@ -480,6 +544,9 @@ export async function getCustomerShowtimes(req, res) {
         SELECT
           s.showtime_id,
           s.movie_id,
+          s.door_open_time,
+          s.door_open_time + INTERVAL '15 minutes'
+            AS advertisement_start_time,
           s.start_time,
           s.end_time,
           s.base_price,
@@ -519,4 +586,3 @@ export async function getCustomerShowtimes(req, res) {
     });
   }
 }
-

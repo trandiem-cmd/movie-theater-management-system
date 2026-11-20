@@ -2,8 +2,7 @@
 const REQUIRED_FIELDS = [
   "movie_id",
   "room_id",
-  "start_time",
-  "end_time",
+  "door_open_time",
   "base_price",
 ];
 
@@ -92,22 +91,18 @@ export function validateShowtime(data, { partial = false } = {}) {
     value.room_id = Number(data.room_id);
   }
 
-  // Validate start time.
-  if (data.start_time !== undefined) {
-    const error = validateTimestamp(data.start_time, "start_time");
+  // Validate door-opening time.
+  if (data.door_open_time !== undefined) {
+    const error = validateTimestamp(
+      data.door_open_time,
+      "door_open_time"
+    );
 
     if (error) return { error };
 
-    value.start_time = new Date(data.start_time).toISOString();
-  }
-
-  // Validate end time.
-  if (data.end_time !== undefined) {
-    const error = validateTimestamp(data.end_time, "end_time");
-
-    if (error) return { error };
-
-    value.end_time = new Date(data.end_time).toISOString();
+    value.door_open_time = new Date(
+      data.door_open_time
+    ).toISOString();
   }
 
   // Validate base price.
@@ -118,26 +113,15 @@ export function validateShowtime(data, { partial = false } = {}) {
       !Number.isFinite(price) ||
       price < 0 ||
       price > 99999999.99 ||
-      Math.round(price * 100) !== Math.round(price * 100) ||
       Math.abs(price * 100 - Math.round(price * 100)) > 0.000001
     ) {
       return {
-        error: "base_price must be a non-negative amount with at most two decimal places",
+        error:
+          "base_price must be a non-negative amount with at most two decimal places",
       };
     }
 
     value.base_price = price;
-  }
-
-  // Check the time range when both values are available.
-  if (
-    value.start_time &&
-    value.end_time &&
-    new Date(value.end_time) <= new Date(value.start_time)
-  ) {
-    return {
-      error: "end_time must be later than start_time",
-    };
   }
 
   return { value };

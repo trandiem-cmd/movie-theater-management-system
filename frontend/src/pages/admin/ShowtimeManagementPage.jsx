@@ -285,7 +285,7 @@ export default function ShowtimeManagementPage() {
                             )}
                           </td>
 
-                          <td>{getDateTime(showtime.start_time)}</td>
+                          <td>{getDateTime(showtime.door_open_time)}</td>
 
                           <td>
                             {showtime.theater_name || "—"}

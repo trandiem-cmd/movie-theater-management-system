@@ -10,9 +10,8 @@ const emptyForm = {
   room_id: "",
   movie_id: "",
   date: "",
-  start_time: "",
-  end_time: "",
-  base_price: "12.00",
+  door_open_time: "",
+  base_price: "17.40",
 };
 
 function getHelsinkiParts(date) {
@@ -88,6 +87,41 @@ function getEndTime(date, startTime, duration) {
   }
 }
 
+function getScheduleTimes(date, doorOpenTime, duration) {
+  if (!date || !doorOpenTime || !duration) return null;
+
+  try {
+    const doorOpen = new Date(
+      helsinkiToISOString(date, doorOpenTime)
+    );
+
+    const advertisementStart = new Date(
+      doorOpen.getTime() + 15 * 60000
+    );
+
+    const movieStart = new Date(
+      doorOpen.getTime() + 27 * 60000
+    );
+
+    const movieEnd = new Date(
+      movieStart.getTime() + Number(duration) * 60000
+    );
+
+    const formatTime = (date) => {
+      const parts = getHelsinkiParts(date);
+      return `${parts.hour}:${parts.minute}`;
+    };
+
+    return {
+      advertisementStart: formatTime(advertisementStart),
+      movieStart: formatTime(movieStart),
+      movieEnd: formatTime(movieEnd),
+    };
+  } catch {
+    return null;
+  }
+}
+
 function getList(payload) {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload?.data)) return payload.data;
@@ -102,12 +136,11 @@ export default function AddShowtimePage() {
   const editId = searchParams.get("id");
   const isEditing = Boolean(editId);
 
-  const [form, setForm] = useState({
-    ...emptyForm,
-    date: getHelsinkiDate(),
-    start_time: "10:00",
-    end_time: "11:30",
-  });
+const [form, setForm] = useState({
+  ...emptyForm,
+  date: getHelsinkiDate(),
+  door_open_time: "10:00",
+});
 
   const [movies, setMovies] = useState([]);
   const [rooms, setRooms] = useState([]);
@@ -204,23 +237,18 @@ useEffect(() => {
         );
 
       if (currentShowtime) {
-        const start = getHelsinkiParts(
-          new Date(currentShowtime.start_time)
-        );
+      const doorOpen = getHelsinkiParts(
+        new Date(currentShowtime.door_open_time)
+      );
 
-        const end = getHelsinkiParts(
-          new Date(currentShowtime.end_time)
-        );
-
-        setForm({
-          city: currentShowtime.city,
-          room_id: String(currentShowtime.room_id),
-          movie_id: String(currentShowtime.movie_id),
-          date: `${start.year}-${start.month}-${start.day}`,
-          start_time: `${start.hour}:${start.minute}`,
-          end_time: `${end.hour}:${end.minute}`,
-          base_price: Number(currentShowtime.base_price).toFixed(2),
-        });
+      setForm({
+        city: currentShowtime.city,
+        room_id: String(currentShowtime.room_id),
+        movie_id: String(currentShowtime.movie_id),
+        date: `${doorOpen.year}-${doorOpen.month}-${doorOpen.day}`,
+        door_open_time: `${doorOpen.hour}:${doorOpen.minute}`,
+        base_price: Number(currentShowtime.base_price).toFixed(2),
+      });
       }
     } catch (err) {
       setError(err.message || "Could not load the showtime form.");
@@ -244,35 +272,21 @@ useEffect(() => {
     (movie) => String(movie.movie_id) === String(form.movie_id)
   );
 
-  function updateField(event) {
-    const { name, value } = event.target;
+function updateField(event) {
+  const { name, value } = event.target;
 
-    setForm((current) => {
-      const next = { ...current, [name]: value };
+  setForm((current) => {
+    const next = { ...current, [name]: value };
 
-      if (name === "city") {
-        next.room_id = "";
-      }
+    if (name === "city") {
+      next.room_id = "";
+    }
 
-      if (name === "movie_id" || name === "date" || name === "start_time") {
-        const movie = name === "movie_id"
-          ? movies.find((item) => String(item.movie_id) === value)
-          : movies.find(
-              (item) => String(item.movie_id) === String(current.movie_id)
-            );
+    return next;
+  });
+}
 
-        const date = name === "date" ? value : current.date;
-        const startTime = name === "start_time" ? value : current.start_time;
-
-        if (movie?.duration && date && startTime) {
-          next.end_time = getEndTime(date, startTime, movie.duration);
-        }
-      }
-
-      return next;
-    });
-  }
-
+ 
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
@@ -283,13 +297,8 @@ useEffect(() => {
       return;
     }
 
-    if (!form.date || !form.start_time || !form.end_time) {
-      setError("Please enter the date, start time, and end time.");
-      return;
-    }
-
-    if (form.end_time <= form.start_time) {
-      setError("End time must be later than start time.");
+    if (!form.date || !form.door_open_time) {
+      setError("Please enter the date and door-opening time.");
       return;
     }
 
@@ -301,41 +310,35 @@ useEffect(() => {
     try {
       setSaving(true);
 
-          const startDateTime = helsinkiToISOString(
-            form.date,
-            form.start_time
-          );
+      const doorOpenDateTime = helsinkiToISOString(
+        form.date,
+        form.door_open_time
+      );
 
-          const endDateTime = helsinkiToISOString(
-            form.date,
-            form.end_time
-          );
+      // Prevent scheduling in the past.
+      if (new Date(doorOpenDateTime).getTime() <= Date.now()) {
+        setError("Please select a future door-opening date and time.");
+        return;
+      }
 
-          // Prevent scheduling in the past.
-          if (new Date(startDateTime).getTime() <= Date.now()) {
-            setError("Please select a future date and time.");
-            return;
-          }
+      const payload = {
+        movie_id: Number(form.movie_id),
+        room_id: Number(form.room_id),
+        door_open_time: doorOpenDateTime,
+        base_price: Number(form.base_price),
+      };
 
-          const payload = {
-            movie_id: Number(form.movie_id),
-            room_id: Number(form.room_id),
-            start_time: startDateTime,
-            end_time: endDateTime,
-            base_price: Number(form.base_price),
-          };
-
-        const response = await fetch(
-          isEditing
-            ? `${API_BASE}/showtimes/${editId}`
-            : `${API_BASE}/showtimes`,
-          {
-            method: isEditing ? "PUT" : "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          }
-        );
+      const response = await fetch(
+        isEditing
+          ? `${API_BASE}/showtimes/${editId}`
+          : `${API_BASE}/showtimes`,
+        {
+          method: isEditing ? "PUT" : "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const result = await response.json();
 
@@ -346,8 +349,8 @@ useEffect(() => {
 
       if (response.status === 403) {
         throw new Error(
-        `You do not have permission to ${isEditing ? "edit" : "add"} showtimes.`
-      );
+          `You do not have permission to ${isEditing ? "edit" : "add"} showtimes.`
+        );
       }
 
       if (!response.ok || result.success === false) {
@@ -355,10 +358,11 @@ useEffect(() => {
       }
 
       setSuccess(
-      isEditing
-        ? "Showtime updated successfully."
-        : "Showtime added successfully."
+        isEditing
+          ? "Showtime updated successfully."
+          : "Showtime added successfully."
       );
+
       setTimeout(() => navigate("/admin/showtimes"), 900);
     } catch (err) {
       setError(err.message || "Could not save the showtime.");
@@ -366,6 +370,7 @@ useEffect(() => {
       setSaving(false);
     }
   }
+
 
   return (
     <div className="admin-page add-showtime-page">
@@ -447,33 +452,84 @@ useEffect(() => {
                       onChange={updateField}
                       required
                     />
+                  <label htmlFor="door_open_time">
+                    Enter Door-Opening Time
+                  </label>
+                  <input
+                    id="door_open_time"
+                    name="door_open_time"
+                    type="time"
+                    min={
+                      form.date === getHelsinkiDate()
+                        ? getHelsinkiTime()
+                        : undefined
+                    }
+                    value={form.door_open_time}
+                    onChange={updateField}
+                    required
+                  />
+                  {selectedMovie && form.date && form.door_open_time && (
+                    (() => {
+                      const schedule = getScheduleTimes(
+                        form.date,
+                        form.door_open_time,
+                        selectedMovie.duration
+                      );
 
-                <label htmlFor="start_time">Enter Start Time</label>
-                    <input
-                      id="start_time"
-                      name="start_time"
-                      type="time"
-                      min={form.date === getHelsinkiDate() ? getHelsinkiTime() : undefined}
-                      value={form.start_time}
-                      onChange={updateField}
-                      required
-                    />
+                      if (!schedule) return null;
 
-                <label htmlFor="end_time">Enter End Time</label>
-                <input
-                  id="end_time"
-                  name="end_time"
-                  type="time"
-                  value={form.end_time}
-                  onChange={updateField}
-                  required
-                />
+                      return (
+                        <div className="showtime-schedule-preview">
+                          <label>Screening Schedule</label>
 
-                {selectedMovie && (
-                  <p className="showtime-duration">
-                    Movie duration: {selectedMovie.duration} minutes
-                  </p>
-                )}
+                          <p>
+                            <lable>Doors open:</lable>{" "}
+                            <input
+                              type="time"
+                              value={form.door_open_time}
+                              onChange={updateField}
+                              name="door_open_time"
+                            />
+                          </p>
+
+                          <p>
+                            <lable>Advertisements start:</lable>{" "}
+                            <input
+                              type="time"
+                              value={schedule.advertisementStart}
+                              onChange={updateField}
+                              name="advertisement_start"
+                            />
+                          </p>
+
+                          <p>
+                            <lable>Movie starts:</lable>{" "}
+                            <input
+                              type="time"
+                              value={schedule.movieStart}
+                              onChange={updateField}
+                              name="movie_start"
+                            />
+                          </p>
+
+                          <p>
+                            <lable>Movie ends:</lable>{" "}
+                            <input
+                              type="time"
+                              value={schedule.movieEnd}
+                              onChange={updateField}
+                              name="movie_end"
+                            />
+                          </p>
+
+                          <small>
+                            Movie end time includes 15 minutes door opening time, 12-minute
+                            advertisement period, and the movie duration of {selectedMovie.duration} minutes.
+                          </small>
+                        </div>
+                      );
+                    })()
+                  )}
 
                 <label htmlFor="base_price">Ticket Price (€)</label>
                 <input

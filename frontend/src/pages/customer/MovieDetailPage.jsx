@@ -8,6 +8,7 @@ import {
   Clock3,
   Film,
   ArrowLeft,
+  Armchair,
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
@@ -369,13 +370,19 @@ function MovieDetailPage() {
             </button>
           </div>
         </section>
-
         <section
           id="movie-showtimes"
           className="movie-detail-section"
         >
           <ShowtimePage movieId={movie.id} />
         </section>
+            <a
+              href="SeatSelectionPage.jsx"
+              className="movie-detail-showtime-btn"
+            >
+              <Armchair size={19} />
+              Select Seat
+            </a>
               </div>
         </div>
   );

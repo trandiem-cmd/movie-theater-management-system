@@ -69,7 +69,13 @@
   display: block;
   margin: 13px 0 7px;
   color: #c49b2d;
-  font-size: 13px;
+  font-size: 15px;
+}
+.showtime-schedule-preview {
+  display: block;
+  margin: 13px 0 7px;
+  color: #c49b2d;
+  font-size: 15px;
 }
 
 .add-showtime-form input,
@@ -84,7 +90,7 @@
   background: #17130a;
   color: #e2c46d;
   font-family: Georgia, serif;
-  font-size: 12px;
+  font-size: 15px;
   box-sizing: border-box;
   color-scheme: dark;
 }
@@ -103,12 +109,6 @@
 .add-showtime-form option {
   background: #17130a;
   color: #e2c46d;
-}
-
-.showtime-duration {
-  margin: 8px 2px;
-  color: #a99a70;
-  font-size: 11px;
 }
 
 .showtime-message {
