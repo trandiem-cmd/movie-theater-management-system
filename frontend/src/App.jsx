@@ -6,6 +6,8 @@ import Header from "./components/common/Header";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 
 import MovieManagementPage from "./pages/admin/MovieManagementPage";
+import ShowtimeManagementPage from "./pages/admin/ShowtimeManagementPage";
+import AddShowtimePage from "./pages/admin/AddShowtimePage";
 import TheaterManagementPage from "./pages/admin/TheaterManagementPage";
 
 import HomePage from "./pages/customer/HomePage";
@@ -61,6 +63,16 @@ function App() {
             path="/admin/movies"
             element={<MovieManagementPage />}
           />
+          <Route element={<ProtectedRoute allowedRole="admin" />}>
+        <Route
+          path="/admin/showtimes"
+          element={<ShowtimeManagementPage />}
+        />
+        </Route>
+        <Route
+          path="/admin/showtimes/new"
+          element={<AddShowtimePage />}
+        />
           <Route
             path="/admin/theaters"
             element={<TheaterManagementPage />}

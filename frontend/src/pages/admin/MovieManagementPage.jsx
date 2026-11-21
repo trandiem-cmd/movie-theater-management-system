@@ -352,10 +352,6 @@ function AdminMoviePage() {
 
   return (
     <div className="admin-page">
-    <div className="page-container">
-      <div className="header-title">
-          Movie management
-        </div>
 
       {/* Main layout */}
       <div className="admin-layout">
@@ -594,6 +590,9 @@ function AdminMoviePage() {
             /* Movie Management List */
             <>
               <div className="page-actions">
+                <div className="header-title">
+                  Movie management
+                </div>
                 <button
                   className="add-movie-button"
                   onClick={openAddForm}
@@ -722,7 +721,6 @@ function AdminMoviePage() {
           )}
         </main>
       </div>
-    </div>
     </div>
   );
 }
