@@ -53,7 +53,7 @@ export const register = async (
 ) => {
   const response = await fetch(`${BASE_URL}/auth/register`, {
     method: "POST",
-    credentials: "same-origin",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
@@ -93,7 +93,7 @@ export const getCurrentUser = async () => {
 export const logout = async () => {
   const response = await fetch(`${BASE_URL}/auth/logout`, {
     method: "POST",
-    credentials: "same-origin",
+    credentials: "include",
   });
 
   const data = await response.json();

@@ -1,0 +1,560 @@
+
+/* ========================================
+   THEATER & ROOM MANAGEMENT
+======================================== */
+
+.admin-page {
+  width: 100%;
+  min-height: 100vh;
+  background: #000;
+  color: #e6e0e0;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.admin-page .page-container {
+  width: min(
+    var(--content-max-width),
+    calc(100% - 2 * var(--page-padding))
+  );
+  margin: 0 auto;
+}
+
+.admin-page button,
+.admin-page input,
+.admin-page select,
+.admin-page textarea {
+  font-family: inherit;
+}
+
+.admin-feedback {
+  margin: 0 0 15px;
+  padding: 12px 15px;
+  border-radius: 5px;
+}
+
+.admin-feedback.error {
+  color: #ff7777;
+  border: 1px solid #8b2929;
+  background: #241010;
+}
+
+.admin-feedback.success {
+  color: #83d69b;
+  border: 1px solid #286b3b;
+  background: #101f13;
+}
+
+/* ========================================
+   PAGE ACTIONS
+======================================== */
+
+.add-location-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 13px;
+  background: #080808;
+  border: 1px solid #b58b00;
+  color: #d6a32c;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.add-location-button:hover {
+  background: #28200c;
+}
+
+/* ========================================
+   FILTERS
+======================================== */
+
+.location-filters {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 12px;
+}
+
+.location-search {
+  height: 45px;
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #a98200;
+  border-radius: 30px;
+  background: linear-gradient(#171717, #050505);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 0 20px;
+  color: #d6a32c;
+}
+
+.location-search input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 15px;
+}
+
+.location-search input::placeholder {
+  color: #d6a32c;
+}
+
+.city-filter {
+  width: 180px;
+  height: 45px;
+  padding: 0 15px;
+  border: 1px solid #a98200;
+  border-radius: 25px;
+  background: linear-gradient(#222, #080808);
+  color: white;
+  outline: none;
+  cursor: pointer;
+}
+
+.city-filter option {
+  background: #171717;
+  color: white;
+}
+
+/* ========================================
+   PAGINATION
+======================================== */
+
+.location-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: #d6a32c;
+}
+
+.location-pagination button {
+  width: 29px;
+  height: 29px;
+  border: 1px solid #a98200;
+  border-radius: 50%;
+  background: #080808;
+  color: #d6a32c;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.location-pagination button:hover:not(:disabled) {
+  background: #332800;
+}
+
+.location-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.location-pagination button svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* ========================================
+   THEATER / ROOM LIST
+======================================== */
+
+.location-list {
+  border: 1px solid #a98200;
+  border-radius: 8px;
+  background: linear-gradient(#171717, #050505);
+  overflow: hidden;
+  min-height: 270px;
+}
+
+.location-list h2 {
+  color: #d6a32c;
+  font-size: 19px;
+  font-weight: normal;
+  padding: 14px 12px 8px;
+  margin: 0;
+}
+
+.location-row {
+  min-height: 65px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #765b00;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.location-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  font-size: 16px;
+}
+
+.location-name > svg {
+  color: #d6a32c;
+  flex-shrink: 0;
+}
+
+.location-name > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.location-name small {
+  color: #999;
+  font-size: 12px;
+}
+
+.location-status {
+  width: 100px;
+  text-align: center;
+  color: #70c98a;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.location-status.inactive {
+  color: #e32626;
+}
+
+.room-capacity {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #aaa;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.room-capacity svg {
+  color: #d6a32c;
+}
+
+/* ========================================
+   ACTION BUTTONS
+======================================== */
+
+.location-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.location-actions > button {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid #765b00;
+  background: #080808;
+  color: #d6a32c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.location-actions > button:hover:not(:disabled) {
+  background: #332800;
+}
+
+.location-actions > button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.location-actions .manage-rooms-button {
+  padding: 0 9px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ========================================
+   THEATER / ROOM FORM
+======================================== */
+
+.add-location-form-container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  background: linear-gradient(#181818, #050505);
+  border: 1px solid #a98200;
+  border-radius: 10px;
+}
+
+.add-location-form-container h2 {
+  color: #d6a32c;
+  font-size: 22px;
+  font-weight: normal;
+  margin: 0 0 24px;
+}
+
+.location-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 45px;
+}
+
+.add-location-form-container .form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.add-location-form-container .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.add-location-form-container .form-group label {
+  color: #e5e0e0;
+  font-size: 15px;
+}
+
+.add-location-form-container .form-group label span {
+  color: #e32626;
+  margin-left: 2px;
+}
+
+.add-location-form-container .form-group input,
+.add-location-form-container .form-group select,
+.add-location-form-container .form-group textarea {
+  width: 100%;
+  max-width: 300px;
+  padding: 0 13px;
+  border: 1px solid #a98200;
+  border-radius: 20px;
+  outline: none;
+  background: linear-gradient(#222, #080808);
+  color: white;
+  font-size: 14px;
+}
+
+.add-location-form-container .form-group input,
+.add-location-form-container .form-group select {
+  height: 39px;
+}
+
+.add-location-form-container .form-group textarea {
+  padding: 10px 13px;
+  border-radius: 12px;
+  resize: vertical;
+  min-height: 90px;
+}
+
+.add-location-form-container .form-group input:focus,
+.add-location-form-container .form-group select:focus,
+.add-location-form-container .form-group textarea:focus {
+  border-color: #e2b83f;
+  box-shadow: 0 0 5px #a98200;
+}
+
+.add-location-form-container .form-group select {
+  cursor: pointer;
+}
+
+.add-location-form-container .form-group select option {
+  background: #171717;
+  color: white;
+}
+
+.add-location-form-container .form-group input::placeholder,
+.add-location-form-container .form-group textarea::placeholder {
+  color: #999;
+}
+
+.add-location-form-container .form-group input[type="url"] {
+  color: white;
+}
+
+.room-form-container {
+  max-width: 600px;
+}
+
+.room-form-container .form-group input,
+.room-form-container .form-group select {
+  max-width: 100%;
+}
+
+/* ========================================
+   FORM BUTTONS
+======================================== */
+
+.add-location-form-container .form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.add-location-form-container .cancel-button,
+.add-location-form-container .save-button {
+  min-width: 115px;
+  height: 40px;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.add-location-form-container .cancel-button {
+  color: #ddd;
+  background: #080808;
+  border: 1px solid #a98200;
+}
+
+.add-location-form-container .save-button {
+  color: #080808;
+  background: #c69a00;
+  border: 1px solid #c69a00;
+  font-weight: bold;
+}
+
+.add-location-form-container .cancel-button:hover {
+  background: #252525;
+}
+
+.add-location-form-container .save-button:hover {
+  background: #e0b52e;
+}
+
+.add-location-form-container button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ========================================
+   ROOM PAGE HEADING
+======================================== */
+
+.location-page-heading {
+  margin-bottom: 25px;
+}
+
+.location-page-heading h2 {
+  color: #d6a32c;
+  font-size: 22px;
+  font-weight: normal;
+  margin: 15px 0 8px;
+}
+
+.location-page-heading p {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #aaa;
+  font-size: 14px;
+  margin: 0;
+}
+
+.location-page-heading p svg {
+  color: #d6a32c;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  background: #080808;
+  border: 1px solid #765b00;
+  color: #d6a32c;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  background: #332800;
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 800px) {
+  .location-row {
+    gap: 8px;
+  }
+
+  .location-form-grid {
+    gap: 20px;
+  }
+
+  .location-actions .manage-rooms-button {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 550px) {
+  .location-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .location-search {
+    width: 100%;
+  }
+
+  .city-filter {
+    width: 100%;
+  }
+
+  .location-row {
+    flex-wrap: wrap;
+    gap: 9px;
+  }
+
+  .location-name {
+    flex-basis: 100%;
+    font-size: 14px;
+  }
+
+  .location-status {
+    width: auto;
+    text-align: left;
+  }
+
+  .location-actions {
+    margin-left: auto;
+  }
+
+  .location-form-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .add-location-form-container {
+    padding: 15px;
+  }
+
+  .add-location-form-container .form-group input,
+  .add-location-form-container .form-group select,
+  .add-location-form-container .form-group textarea {
+    max-width: 100%;
+  }
+
+  .add-location-form-container .form-buttons {
+    flex-wrap: wrap;
+  }
+
+  .add-location-form-container .cancel-button,
+  .add-location-form-container .save-button {
+    flex: 1;
+  }
+
+  .location-actions .manage-rooms-button {
+    font-size: 10px;
+  }
+}

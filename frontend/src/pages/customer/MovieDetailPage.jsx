@@ -8,12 +8,13 @@ import {
   Clock3,
   Film,
   ArrowLeft,
+  Armchair,
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
 import "../../components/movie/MovieCard.css";
 import "./MovieDetailPage.css";
-
+import ShowtimePage from "./ShowtimePage";
 
 function getTrailerEmbedUrl(url) {
   if (!url) return "";
@@ -369,24 +370,21 @@ function MovieDetailPage() {
             </button>
           </div>
         </section>
-
-        {/* Showtime integration will be added later */}
         <section
           id="movie-showtimes"
           className="movie-detail-section"
         >
-          <h2>
-            <CalendarDays size={23} />
-            Showtimes
-          </h2>
-
-          <p className="movie-detail-placeholder-text">
-            Showtime information will be available when connected
-            to the cinema scheduling system.
-          </p>
+          <ShowtimePage movieId={movie.id} />
         </section>
-      </div>
-    </div>
+            <a
+              href="SeatSelectionPage.jsx"
+              className="movie-detail-showtime-btn"
+            >
+              <Armchair size={19} />
+              Select Seat
+            </a>
+              </div>
+        </div>
   );
 }
 

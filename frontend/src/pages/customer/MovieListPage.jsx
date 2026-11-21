@@ -129,7 +129,7 @@ function MovieListPage() {
 
   return (
     <div className="movie-list-page">
-     
+      <div className="page-container">
       <section
         className="movie-list-hero"
         style={{
@@ -273,6 +273,7 @@ function MovieListPage() {
             </section>
           </>
         )}
+      </div>
       </div>
     </div>
   );

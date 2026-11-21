@@ -61,7 +61,7 @@ function Navbar() {
           {!isAdminPage && (
             <div className="nav-links">
               <Link to="/movies">Films</Link>
-              <Link to="/showtimes">Cinema Showtimes</Link>
+              <Link to="/theaters">Cinema Showtimes</Link>
               <Link to="/experience">Experience</Link>
             </div>
           )}

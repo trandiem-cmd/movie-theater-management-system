@@ -6,20 +6,27 @@ import Header from "./components/common/Header";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 
 import MovieManagementPage from "./pages/admin/MovieManagementPage";
+import ShowtimeManagementPage from "./pages/admin/ShowtimeManagementPage";
+import AddShowtimePage from "./pages/admin/AddShowtimePage";
+import TheaterManagementPage from "./pages/admin/TheaterManagementPage";
 
 import HomePage from "./pages/customer/HomePage";
 import MovieListPage from "./pages/customer/MovieListPage";
 import MovieDetailPage from "./pages/customer/MovieDetailPage";
-import ProfilePage from "./pages/customer/ProfilePage";
+
+
 import SeatSelectionPage from "./pages/customer/SeatSelectionPage";
+
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
 import VerifyResetOtpPage from "./pages/auth/VerifyResetOtpPage";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
+import ProfilePage from "./pages/auth/ProfilePage";
+import TheaterListPage from "./pages/customer/TheaterListPage";
 
 import "./App.css";
-import { Omega } from "lucide-react";
+
 
 function App() {
   return (
@@ -33,6 +40,8 @@ function App() {
           <Route path="/movies" element={<MovieListPage />} />
           <Route path="/movies/:id" element={<MovieDetailPage />} />
 
+
+          <Route path="/theaters" element={<TheaterListPage />} />
 
           {/* Authentication */}
           <Route path="/login" element={<LoginPage />} />
@@ -67,10 +76,26 @@ function App() {
             element={<SeatSelectionPage />}
           />
 
+          <Route element={<ProtectedRoute allowedRole="admin" />}>
+            <Route
+              path="/admin/showtimes"
+              element={<ShowtimeManagementPage />}
+            />
+            <Route
+              path="/admin/showtimes/new"
+              element={<AddShowtimePage />}
+            />
+          </Route>
+          <Route
+            path="/admin/theaters"
+            element={<TheaterManagementPage />}
+          />
+
         </Routes>
-      </main>
+      
 
       <Footer />
+      </main>
     </BrowserRouter>
   );
 }

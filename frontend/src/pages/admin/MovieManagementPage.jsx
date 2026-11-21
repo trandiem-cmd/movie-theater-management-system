@@ -3,24 +3,17 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
-  Bell,
-  UserCircle,
-  LayoutDashboard,
-  Clapperboard,
-  CalendarDays,
-  Ticket,
-  ChartColumn,
-  Users,
-  LogOut,
   Plus,
   Search,
   Pencil,
   Trash2,
   ChevronLeft,
   ChevronRight,
+  Clapperboard,
 } from "lucide-react";
 
 import "./MovieManagementPage.css";
+import AdminSidebar from "../../pages/admin/adminSidebar";
 
 const API_URL = "/api/admin/movies";
 const PAGE_SIZE = 4;
@@ -359,57 +352,10 @@ function AdminMoviePage() {
 
   return (
     <div className="admin-page">
-      
-      <div className="header-title">
-          Movie management
-        </div>
 
       {/* Main layout */}
       <div className="admin-layout">
-        {/* Sidebar */}
-        <aside className="admin-sidebar">
-          <h2>Main Menu</h2>
-
-          <nav className="sidebar-links">
-            <a href="#">
-              <LayoutDashboard />
-              Dashboard
-            </a>
-
-            <a href="/admin/movies" className="active">
-              <Clapperboard />
-              Movies
-            </a>
-
-            <a href="#">
-              <CalendarDays />
-              Showtimes
-            </a>
-
-            <a href="#">
-              <Ticket />
-              Bookings
-            </a>
-
-            <a href="#">
-              <ChartColumn />
-              Reports
-            </a>
-
-            <a href="#">
-              <Users />
-              Users
-            </a>
-          </nav>
-
-          <button
-            className="logout-button"
-            onClick={handleLogout}
-          >
-            <LogOut />
-            Log out
-          </button>
-        </aside>
+        <AdminSidebar onLogout={handleLogout} />
 
         {/* Main content */}
         <main className="admin-main">
@@ -644,6 +590,9 @@ function AdminMoviePage() {
             /* Movie Management List */
             <>
               <div className="page-actions">
+                <div className="header-title">
+                  Movie management
+                </div>
                 <button
                   className="add-movie-button"
                   onClick={openAddForm}
