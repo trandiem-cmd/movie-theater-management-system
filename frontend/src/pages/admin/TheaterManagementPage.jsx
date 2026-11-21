@@ -3,29 +3,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
-  Plus,
-  Search,
-  Pencil,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  Building2,
-  DoorOpen,
-  ArrowLeft,
-  MapPin,
-  Users,
+  Plus, Search, Pencil, Trash2, ChevronLeft, ChevronRight, Building2, DoorOpen, ArrowLeft, MapPin, Users,
 } from "lucide-react";
 
-import {
-  getTheaters,
-  getTheaterCities,
-  createTheater,
-  updateTheater,
-  deleteTheaterAPI,
-  getTheaterRooms,
-  createRoom,
-  updateRoom,
-  deleteRoomAPI,
+import {getTheaters,getTheaterCities,createTheater,updateTheater,deleteTheaterAPI,getTheaterRooms,createRoom,updateRoom,deleteRoomAPI,
 } from "../../api.js";
 import AdminSidebar from "../../pages/admin/adminSidebar";
 import "./TheaterManagementPage.css";
