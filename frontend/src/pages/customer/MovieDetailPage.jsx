@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   CalendarDays,
@@ -8,7 +7,6 @@ import {
   Clock3,
   Film,
   ArrowLeft,
-  Armchair,
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
@@ -53,7 +51,6 @@ function MovieDetailPage() {
   const [apiError, setApiError] = useState("");
   const [apiLoading, setApiLoading] = useState(true);
 
-  
   useEffect(() => {
     let cancelled = false;
 
@@ -98,7 +95,6 @@ function MovieDetailPage() {
     };
   }, [id]);
 
-  
   const movie = apiMovie
     ? {
         id: apiMovie.movie_id,
@@ -118,15 +114,12 @@ function MovieDetailPage() {
         ageRating: apiMovie.age_rating || "TBA",
 
         releaseDate: apiMovie.release_date
-          ? new Date(apiMovie.release_date).toLocaleDateString(
-              "en-GB",
-              {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-                timeZone: "Europe/Helsinki"
-              }
-            )
+          ? new Date(apiMovie.release_date).toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+              timeZone: "Europe/Helsinki",
+            })
           : "Not available",
 
         description:
@@ -134,17 +127,15 @@ function MovieDetailPage() {
 
         director: apiMovie.director || "Not available",
 
-        writers: Array.isArray(apiMovie.writers) &&
-          apiMovie.writers.length > 0
-          ? apiMovie.writers.join(", ")
-          : "Not available",
+        writers:
+          Array.isArray(apiMovie.writers) && apiMovie.writers.length > 0
+            ? apiMovie.writers.join(", ")
+            : "Not available",
 
         productionCompany:
           apiMovie.productionCompany || "Not available",
 
-        castProfiles: Array.isArray(apiMovie.cast)
-          ? apiMovie.cast
-          : [],
+        castProfiles: Array.isArray(apiMovie.cast) ? apiMovie.cast : [],
 
         language: apiMovie.language || "Not available",
 
@@ -156,7 +147,6 @@ function MovieDetailPage() {
       }
     : null;
 
-  
   if (apiLoading) {
     return (
       <div className="movie-detail-page">
@@ -167,7 +157,6 @@ function MovieDetailPage() {
     );
   }
 
-  
   if (apiError || !movie) {
     return (
       <div className="movie-detail-page">
@@ -193,7 +182,6 @@ function MovieDetailPage() {
           Back to Movies
         </Link>
 
-       
         <section className="movie-detail-hero">
           <div className="movie-detail-video">
             {movie.trailerUrl ? (
@@ -225,7 +213,6 @@ function MovieDetailPage() {
               <span>·</span>
               <span>{movie.duration}</span>
               <span>·</span>
-
               <span
                 className={`home-age-badge home-age-${movie.ageRating}`}
               >
@@ -247,7 +234,6 @@ function MovieDetailPage() {
           </div>
         </section>
 
-       
         <section className="movie-detail-section">
           <h2>
             <Info size={23} />
@@ -304,7 +290,6 @@ function MovieDetailPage() {
                   <span>{movie.productionCompany}</span>
                 </div>
 
-                
                 <div className="movie-detail-info-row movie-detail-cast-row">
                   <span>Cast</span>
 
@@ -370,21 +355,15 @@ function MovieDetailPage() {
             </button>
           </div>
         </section>
+
         <section
           id="movie-showtimes"
           className="movie-detail-section"
         >
           <ShowtimePage movieId={movie.id} />
         </section>
-            <a
-              href="SeatSelectionPage.jsx"
-              className="movie-detail-showtime-btn"
-            >
-              <Armchair size={19} />
-              Select Seat
-            </a>
-              </div>
-        </div>
+      </div>
+    </div>
   );
 }
 

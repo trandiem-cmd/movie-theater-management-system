@@ -1,0 +1,78 @@
+.seat-map {
+  position: relative;
+  flex: 0 0 auto;
+  margin-left: 0;
+  zoom: 1;
+}
+
+/* Cinema screen */
+.seat-map-screen {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 85%;
+  height: 55px;
+  margin: 0 auto 35px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  clip-path: none;
+  color: #d4af37;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 4px;
+  text-shadow: none;
+}
+
+.seat-map-screen::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 5%;
+  width: 90%;
+  height: 35px;
+  border-top: 1.5px solid #c9a13b;
+  border-radius: 50% 50% 0 0;
+  pointer-events: none;
+}
+
+.seat-map::before,
+.seat-map-screen::after {
+  content: none;
+}
+
+/* Wheelchair spaces */
+.seat-map-wheelchair-spaces {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  margin-top: 35px;
+  margin-bottom: 10px;
+}
+
+/* Regular seat rows */
+.seat-map-rows {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 35px;
+}
+
+.seat-map-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: max-content;
+}
+
+.seat-map-row-label {
+  width: 28px;
+  flex-shrink: 0;
+  color: #d4af37;
+  text-align: center;
+}

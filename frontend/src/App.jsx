@@ -4,8 +4,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Footer from "./components/common/Footer";
 import Header from "./components/common/Header";
 import ProtectedRoute from "./components/common/ProtectedRoute";
-
 import MovieManagementPage from "./pages/admin/MovieManagementPage";
+
 import ShowtimeManagementPage from "./pages/admin/ShowtimeManagementPage";
 import AddShowtimePage from "./pages/admin/AddShowtimePage";
 import TheaterManagementPage from "./pages/admin/TheaterManagementPage";
@@ -16,6 +16,8 @@ import MovieDetailPage from "./pages/customer/MovieDetailPage";
 
 
 import SeatSelectionPage from "./pages/customer/SeatSelectionPage";
+import SeatManagementPage from "./pages/admin/SeatManagementPage";
+
 
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
@@ -64,32 +66,43 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
 
-          {/* Admin pages */}
-          <Route
-            path="/admin/movies"
-            element={<MovieManagementPage />}
-          />
+                      {/* Admin pages */}
+            <Route
+              path="/admin/movies"
+              element={<MovieManagementPage />}
+            />
 
-          {/* Seat Selection */}
-          <Route
-            path="/showtimes/:id/seats"
-            element={<SeatSelectionPage />}
-          />
+            {/* Customer Seat Selection */}
+            <Route
+              path="/showtimes/:id/seats"
+              element={<SeatSelectionPage />}
+            />
 
+            {/* Admin Showtime Management */}
+            <Route element={<ProtectedRoute allowedRole="admin" />}>
+              <Route
+                path="/admin/showtimes"
+                element={<ShowtimeManagementPage />}
+              />
+              <Route
+                path="/admin/showtimes/new"
+                element={<AddShowtimePage />}
+              />
+            </Route>
+
+            {/* Admin Theater Management */}
+            <Route
+              path="/admin/theaters"
+              element={<TheaterManagementPage />}
+            />
+
+           {/* Admin Seat Management */}
           <Route element={<ProtectedRoute allowedRole="admin" />}>
             <Route
-              path="/admin/showtimes"
-              element={<ShowtimeManagementPage />}
-            />
-            <Route
-              path="/admin/showtimes/new"
-              element={<AddShowtimePage />}
+              path="/admin/seats"
+              element={<SeatManagementPage />}
             />
           </Route>
-          <Route
-            path="/admin/theaters"
-            element={<TheaterManagementPage />}
-          />
 
         </Routes>
       

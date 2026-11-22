@@ -1,7 +1,7 @@
-
 import { useEffect, useMemo, useState } from "react";
 import { Clock3, MapPin, CalendarDays } from "lucide-react";
 import "./ShowtimePage.css";
+import { Link } from "react-router-dom";
 
 const TIME_ZONE = "Europe/Helsinki";
 
@@ -359,6 +359,19 @@ function handleRoomChange(event) {
                   </p>
                 </div>
               )}
+                {selectedShowtime && (
+                  <Link
+                    to={`/showtimes/${selectedShowtime.showtime_id}/seats`}
+                    state={{
+                      movieId,
+                      showtime: selectedShowtime,
+                    }}
+                    className="movie-detail-showtime-btn"
+                  >
+                    Select Seat
+                  </Link>
+                )}
+
             </>
           )}
         </>

@@ -19,12 +19,15 @@ const API_URL = "/api/admin/movies";
 const PAGE_SIZE = 4;
 
 const emptyForm = {
+  // Store the selected movie's TMDB ID.
+  tmdbId: null,
   title: "",
   description: "",
   duration: "",
   releaseDate: "",
   ageRating: "",
-  status: "coming_soon",
+   // Let the admin choose the movie status instead of defaulting to Coming Soon.
+  status: "",
   director: "",
   genre: "",
   language: "",
@@ -36,6 +39,8 @@ const emptyForm = {
 
 function getFormData(movie) {
   return {
+    // Keep the TMDB ID when editing an existing movie.
+    tmdbId: movie.tmdb_id ?? null,
     title: movie.title || "",
     description: movie.description || "",
     duration: movie.duration ?? "",
@@ -60,6 +65,8 @@ function getFormData(movie) {
 
 function getApiPayload(formData) {
   return {
+    // Include the TMDB ID when saving the movie.
+    tmdb_id: formData.tmdbId,
     title: formData.title.trim(),
     description: formData.description.trim(),
     duration: Number(formData.duration),
@@ -102,6 +109,12 @@ function AdminMoviePage() {
   const [showForm, setShowForm] = useState(false);
   const [editingMovie, setEditingMovie] = useState(null);
   const [formData, setFormData] = useState({ ...emptyForm });
+
+  // TMDB search input, results, loading state, and search status.
+  const [tmdbSearch, setTmdbSearch] = useState("");
+  const [tmdbResults, setTmdbResults] = useState([]);
+  const [tmdbLoading, setTmdbLoading] = useState(false);
+  const [tmdbHasSearched, setTmdbHasSearched] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -187,6 +200,12 @@ function AdminMoviePage() {
     setSuccess("");
     setEditingMovie(null);
     setFormData({ ...emptyForm });
+
+    // Clear the previous TMDB search when opening the form.
+    setTmdbSearch("");
+    setTmdbResults([]);
+    setTmdbHasSearched(false);
+
     setShowForm(true);
   }
 
@@ -207,6 +226,127 @@ function AdminMoviePage() {
       ...previous,
       [name]: value,
     }));
+  }
+
+  // Search TMDB for movies using the title entered by the admin.
+  async function handleTMDBSearch() {
+    if (!tmdbSearch.trim()) {
+      setError("Please enter a movie title.");
+      return;
+    }
+
+    setError("");
+    setTmdbLoading(true);
+    setTmdbResults([]);
+
+    try {
+      const response = await fetch(
+        `/api/admin/movies/tmdb/search?q=${encodeURIComponent(tmdbSearch.trim())}`,
+        { credentials: "same-origin" }
+      );
+
+      if (response.status === 401) {
+        navigate("/login");
+        return;
+      }
+
+      if (response.status === 403) {
+        throw new Error("You do not have Admin permission.");
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "TMDB search failed.");
+      }
+
+      setTmdbResults(data.data || []);
+      setTmdbHasSearched(true);
+    } catch (err) {
+      setError(err.message || "Could not search TMDB.");
+    } finally {
+      setTmdbLoading(false);
+    }
+  }
+
+  // Fetch the selected movie's details and fill the Add Movie form.
+  async function handleTMDBSelect(movie) {
+    setError("");
+    setTmdbLoading(true);
+    setTmdbHasSearched(false);
+
+    try {
+      const response = await fetch(
+        `/api/admin/movies/tmdb/${movie.id}`,
+        { credentials: "same-origin" }
+      );
+
+      if (response.status === 401) {
+        navigate("/login");
+        return;
+      }
+
+      if (response.status === 403) {
+        throw new Error("You do not have Admin permission.");
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Could not load movie details.");
+      }
+
+      const details = data.data;
+
+      // Find the director.
+      const director = details.credits?.crew?.find(
+        (person) => person.job === "Director"
+      );
+
+      // Get the first 5 actors.
+      const cast = details.credits?.cast
+        ?.slice(0, 5)
+        .map((person) => person.name)
+        .join(", ") || "";
+
+      // Find a YouTube trailer.
+      const trailer = details.videos?.results?.find(
+        (video) =>
+          video.site === "YouTube" &&
+          video.type === "Trailer"
+      );
+
+      // Fill available fields from TMDB.
+      // The admin still chooses the Finnish age rating, subtitles, and movie status.
+      setFormData({
+        ...emptyForm,
+        tmdbId: details.id,
+        title: details.title || "",
+        description: details.overview || "",
+        duration: details.runtime || "",
+        releaseDate: details.release_date || "",
+        director: director?.name || "",
+        castMembers: cast,
+        genre: details.genres?.map((genre) => genre.name).join(", ") || "",
+        language:
+          details.spoken_languages?.find(
+            (language) => language.iso_639_1 === details.original_language
+          )?.english_name || details.original_language || "",
+        posterUrl: details.poster_path
+          ? `https://image.tmdb.org/t/p/w500${details.poster_path}`
+          : "",
+        trailerUrl: trailer
+          ? `https://www.youtube.com/watch?v=${trailer.key}`
+          : "",
+      });
+
+      setTmdbSearch("");
+      setTmdbResults([]);
+    } catch (err) {
+      setError(err.message || "Could not fetch movie details.");
+    } finally {
+      setTmdbLoading(false);
+    }
   }
 
   // Save a new movie or update an existing movie.
@@ -352,6 +492,9 @@ function AdminMoviePage() {
 
   return (
     <div className="admin-page">
+       <div className="header-title">
+        Movie management
+      </div>
 
       {/* Main layout */}
       <div className="admin-layout">
@@ -377,6 +520,80 @@ function AdminMoviePage() {
               <h2>
                 {editingMovie ? "Edit Movie" : "Add New Movie"}
               </h2>
+
+              {/* TMDB search is available only when adding a new movie. */}
+              {!editingMovie && (
+                <div className="tmdb-search-section">
+                  <label>Search TMDB (Optional)</label>
+
+                  <div className="tmdb-search-row">
+                    <input
+                      type="text"
+                      placeholder="Search movie title, e.g. Avatar"
+                      value={tmdbSearch}
+                      onChange={(event) => setTmdbSearch(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          handleTMDBSearch();
+                        }
+                      }}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={handleTMDBSearch}
+                      disabled={tmdbLoading}
+                    >
+                      {tmdbLoading ? "Searching..." : "Search"}
+                    </button>
+                  </div>
+
+                  {/* Show up to five matching movies from TMDB. */}
+                  {tmdbResults.length > 0 && (
+                    <div className="tmdb-results">
+                      {tmdbResults.slice(0, 5).map((movie) => (
+                        <button
+                          key={movie.id}
+                          type="button"
+                          className="tmdb-result"
+                          onClick={() => handleTMDBSelect(movie)}
+                        >
+                          {movie.poster_path ? (
+                            <img
+                              src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`}
+                              alt=""
+                            />
+                          ) : (
+                            <div className="tmdb-no-poster">
+                              <Clapperboard size={18} />
+                            </div>
+                          )}
+
+                          <div className="tmdb-result-info">
+                            <strong>{movie.title}</strong>
+                            <span>
+                              {movie.release_date?.slice(0, 4) || "Unknown year"}
+                            </span>
+                          </div>
+
+                          <ChevronRight
+                            size={18}
+                            className="tmdb-result-arrow"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Show a message when no matching movies are found. */}
+                  {tmdbHasSearched && !tmdbLoading && tmdbResults.length === 0 && (
+                    <p className="tmdb-no-results" role="status">
+                      No movies found. Try another title or check the spelling.
+                    </p>
+                  )}
+                </div>
+              )}
 
               <form onSubmit={saveMovie}>
                 <div className="form-grid">
@@ -414,19 +631,20 @@ function AdminMoviePage() {
                     </div>
 
                     <div className="form-group">
-                    <label>Age Rating</label>
+                      <label>Age Rating</label>
 
-                     <select
+                      <select
                         name="ageRating"
                         value={formData.ageRating}
                         onChange={handleFormChange}
-                        >
+                      >
                         <option value="">Select age rating</option>
                         <option value="S">S - Suitable for all ages</option>
                         <option value="7">7 - Age 7 and above</option>
                         <option value="12">12 - Age 12 and above</option>
                         <option value="16">16 - Age 16 and above</option>
-                     </select>
+                        <option value="18">18 - Age 18 and above</option>
+                      </select>
                     </div>
 
                     <div className="form-group">
@@ -498,7 +716,11 @@ function AdminMoviePage() {
                         name="status"
                         value={formData.status}
                         onChange={handleFormChange}
+                        required
                       >
+                        <option value="" disabled>
+                          Select movie status
+                        </option>
                         <option value="coming_soon">
                           Coming Soon
                         </option>

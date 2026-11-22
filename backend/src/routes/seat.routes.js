@@ -1,4 +1,3 @@
-
 import express from "express";
 import { getRoomSeats } from "../controllers/seat.controller.js";
 

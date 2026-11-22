@@ -1,0 +1,138 @@
+
+### Test Get Room Seats - Invalid Room ID
+GET http://localhost:3001/api/rooms/abc/seats
+Content-Type: application/json
+
+###
+### Test Get Room Seats - Room Not Found
+GET http://localhost:3001/api/rooms/999999/seats
+Content-Type: application/json
+
+###
+### Test Get Room Seats - Valid Room ID
+GET http://localhost:3001/api/rooms/1/seats
+Content-Type: application/json
+
+###
+### Test Add Room Seats - Invalid Room ID
+POST http://localhost:3001/api/admin/rooms/abc/seats
+Content-Type: application/json
+
+{
+  "seats": [
+    {
+      "rowNumber": 1,
+      "seatNumber": 1,
+      "displayOrder": 1
+    }
+  ]
+}
+
+###
+### Test Add Room Seats - Room Not Found
+POST http://localhost:3001/api/admin/rooms/999999/seats
+Content-Type: application/json
+
+{
+  "seats": [
+    {
+      "rowNumber": 1,
+      "seatNumber": 1,
+      "displayOrder": 1
+    }
+  ]
+}
+
+###
+### Test Add Room Seats - Empty Seat List
+POST http://localhost:3001/api/admin/rooms/999999/seats
+Content-Type: application/json
+
+{
+  "seats": []
+}
+
+###
+### Test Add Room Seats - Row 13 Not Allowed
+POST http://localhost:3001/api/admin/rooms/999999/seats
+Content-Type: application/json
+
+{
+  "seats": [
+    {
+      "rowNumber": 13,
+      "seatNumber": 1,
+      "displayOrder": 1
+    }
+  ]
+}
+
+###
+### Test Add Room Seats - Invalid Display Order
+POST http://localhost:3001/api/admin/rooms/999999/seats
+Content-Type: application/json
+
+{
+  "seats": [
+    {
+      "rowNumber": 1,
+      "seatNumber": 1,
+      "displayOrder": 11
+    }
+  ]
+}
+
+###
+### Test Update Seat - Invalid Seat ID
+PUT http://localhost:3001/api/admin/seats/abc
+Content-Type: application/json
+
+{
+  "status": "inactive"
+}
+
+###
+### Test Update Seat - Seat Not Found
+PUT http://localhost:3001/api/admin/seats/999999
+Content-Type: application/json
+
+{
+  "status": "inactive"
+}
+
+
+
+### Generate Seat Layout - Invalid Room ID
+POST http://localhost:3001/api/admin/rooms/abc/generate-seats
+Content-Type: application/json
+
+###
+### Generate Seat Layout - Room Not Found
+POST http://localhost:3001/api/admin/rooms/999999/generate-seats
+Content-Type: application/json
+
+###
+### Generate Seat Layout - Valid Empty Room
+# Replace 3 with the ID of an EMPTY room with capacity 100 or 200
+POST http://localhost:3001/api/admin/rooms/3/generate-seats
+Content-Type: application/json
+
+###
+### Get Generated Seats
+# Use the same room ID
+GET http://localhost:3001/api/rooms/3/seats
+Content-Type: application/json
+
+### Test Add Room Seats - Seat 13 Not Allowed
+POST http://localhost:3001/api/admin/rooms/999999/seats
+Content-Type: application/json
+
+{
+  "seats": [
+    {
+      "rowNumber": 1,
+      "seatNumber": 13,
+      "displayOrder": 1
+    }
+  ]
+}

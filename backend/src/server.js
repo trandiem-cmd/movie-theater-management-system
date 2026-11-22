@@ -11,7 +11,10 @@ import movieRoutes from "./routes/movie.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 
 import seatRoutes from "./routes/seat.routes.js";
-import locationRoutes from './routes/location.routes.js';
+import locationRoutes from "./routes/location.routes.js";
+import { getShowtimeSeats } from "./controllers/seat.controller.js";
+
+
 
 
 dotenv.config();
@@ -104,7 +107,10 @@ app.use("/api/movies", movieRoutes);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+
+// Seat Management
 app.use("/api/rooms", seatRoutes);
+app.get("/api/showtimes/:id/seats", getShowtimeSeats);
 
 
 app.use('/api/theaters', locationRoutes);

@@ -221,7 +221,172 @@ export const resetPassword = async (
 
   return data;
 };
+
+
+/* Seat Management */
+
+// Get room seats
+export const getRoomSeats = async (roomId) => {
+  const response = await fetch(`${BASE_URL}/rooms/${roomId}/seats`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  return handleResponse(response, "Failed to load room seats");
+};
+
+// Get showtime seat availability
+export const getShowtimeSeats = async (showtimeId) => {
+  const response = await fetch(
+    `${BASE_URL}/showtimes/${showtimeId}/seats`,
+    {
+      method: "GET",
+      credentials: "include",
+    }
+  );
+
+  return handleResponse(response, "Failed to load showtime seats");
+};
+
+// Add seats
+export const addRoomSeats = async (roomId, seats) => {
+  const response = await fetch(`${BASE_URL}/admin/rooms/${roomId}/seats`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ seats }),
+  });
+
+  return handleResponse(response, "Failed to add seats");
+};
+
+// Generate complete seat layout
+export const generateSeatLayout = async (roomId) => {
+  const response = await fetch(
+    `${BASE_URL}/admin/rooms/${roomId}/generate-seats`,
+    {
+      method: "POST",
+      credentials: "include",
+    }
+  );
+
+  return handleResponse(response, "Failed to generate seat layout");
+};
+
+// Add wheelchair space
+export const addWheelchairSpace = async (roomId, spaceNumber) => {
+  const response = await fetch(
+    `${BASE_URL}/admin/rooms/${roomId}/wheelchair-spaces`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ spaceNumber }),
+    }
+  );
+
+  return handleResponse(response, "Failed to add wheelchair space");
+};
+
+// Update seat
+export const updateSeat = async (seatId, seatData) => {
+  const response = await fetch(`${BASE_URL}/admin/seats/${seatId}`, {
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(seatData),
+  });
+
+  return handleResponse(response, "Failed to update seat");
+};
+
+// Update wheelchair space
+export const updateWheelchairSpace = async (spaceId, status) => {
+  const response = await fetch(
+    `${BASE_URL}/admin/wheelchair-spaces/${spaceId}`,
+    {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    }
+  );
+
+  return handleResponse(response, "Failed to update wheelchair space");
+};
+
+// Delete one seat
+export const deleteSeat = async (seatId) => {
+  const response = await fetch(`${BASE_URL}/admin/seats/${seatId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  return handleResponse(response, "Failed to delete seat");
+};
+
+// Delete one row
+export const deleteSeatRow = async (roomId, rowNumber) => {
+  const response = await fetch(
+    `${BASE_URL}/admin/rooms/${roomId}/rows/${rowNumber}/seats`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    }
+  );
+
+  return handleResponse(response, "Failed to delete row");
+};
+
+// Delete multiple rows
+export const deleteSeatRows = async (roomId, rowNumbers) => {
+  const response = await fetch(
+    `${BASE_URL}/admin/rooms/${roomId}/rows/seats`,
+    {
+      method: "DELETE",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ rowNumbers }),
+    }
+  );
+
+  return handleResponse(response, "Failed to delete selected rows");
+};
+
+// Get admin rooms
+export const getAdminRooms = async () => {
+  const response = await fetch(`${BASE_URL}/admin/rooms`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  return handleResponse(response, "Failed to load rooms");
+};
+
+// Get admin showtimes
+export const getAdminShowtimes = async () => {
+  const response = await fetch(`${BASE_URL}/admin/showtimes`, {
+    method: "GET",
+    credentials: "include",
+  });
+
+  return handleResponse(response, "Failed to load showtimes");
+};
+
+
+
 // Movies
 // Theaters
+// Seats
 // Showtimes
 // Bookings

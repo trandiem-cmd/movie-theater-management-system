@@ -1,4 +1,3 @@
-
 import { Armchair, Accessibility } from "lucide-react";
 import "./Seat.css";
 
@@ -11,7 +10,8 @@ function Seat({
   const isDisabled =
     status === "booked" ||
     status === "held" ||
-    status === "unavailable";
+    status === "unavailable" ||
+    status === "inactive";
 
   const isSelected = status === "selected";
   const isWheelchair = type === "wheelchair";
