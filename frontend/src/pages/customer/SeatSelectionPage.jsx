@@ -271,10 +271,15 @@ function SeatSelectionPage() {
             <section className="seat-map-section">
               <div className="seat-map-with-legend">
                 {seatsLoading ? (
-                  <p>Loading seats...</p>
-                ) : seatsError ? (
-                  <p role="alert">{seatsError}</p>
-                ) : (
+                <p>Loading seats...</p>
+              ) : seatsError ? (
+                <p role="alert">{seatsError}</p>
+              ) : seats.length === 0 && wheelchairSpaces.length === 0 ? (
+                <p role="status">
+                  No seats are available for this auditorium yet.
+                </p>
+              ) : (
+                <>
                   <SeatMap
                     seats={seats}
                     wheelchairSpaces={wheelchairSpaces}
@@ -283,9 +288,10 @@ function SeatSelectionPage() {
                     selectedWheelchairSpaces={selectedWheelchairSpaces}
                     onWheelchairClick={handleWheelchairClick}
                   />
-                )}
+                </>
+              )}
 
-                <SeatLegend isCustomer />
+              <SeatLegend isCustomer />
               </div>
             </section>
 

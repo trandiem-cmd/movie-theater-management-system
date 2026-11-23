@@ -74,6 +74,14 @@ function SeatMap({
           );
         })}
       </div>
+      {hasSeatData && seats.length === 0 && (
+        <p
+          role="status"
+          style={{ textAlign: "center", marginTop: "20px" }}
+        >
+          No regular seats are available for this auditorium yet.
+        </p>
+      )}
 
       {/* Regular seat rows */}
       <div className="seat-map-rows">

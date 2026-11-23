@@ -275,146 +275,120 @@ function SeatManagementPage() {
   }
 
   // Add seats or rows
-  async function handleAddSeat(event) {
-    event.preventDefault();
-    setAddSeatError("");
+  
+async function handleAddSeat(event) {
+  event.preventDefault();
+  setAddSeatError("");
 
-    if (!auditorium || showtime || loading) {
-      setAddSeatError(
-        "Select an auditorium without a showtime first."
+  if (!auditorium || showtime || loading) {
+    setAddSeatError("Select an auditorium without a showtime first.");
+    return;
+  }
+
+  const startRow = Number(newSeatRow);
+  const rowCount = Number(newRowCount);
+  const seatsPerRow = Number(newSeatCount);
+
+  if (!Number.isSafeInteger(startRow) || startRow < 1 || startRow === 13) {
+    setAddSeatError("Enter a valid starting row (row 13 is skipped).");
+    return;
+  }
+
+  if (!Number.isSafeInteger(rowCount) || rowCount < 1 || rowCount > 20) {
+    setAddSeatError("Enter between 1 and 20 rows.");
+    return;
+  }
+
+  if (!Number.isSafeInteger(seatsPerRow) || seatsPerRow < 1 || seatsPerRow > 10) {
+    setAddSeatError("Enter between 1 and 10 seats per row.");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const currentResult = await getRoomSeats(auditorium);
+    const currentSeats = currentResult.data?.seats || [];
+
+    const existingNumbers = new Set(
+      currentSeats.map((seat) => Number(seat.seat_number))
+    );
+
+    const newSeats = [];
+    let row = startRow;
+
+    for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+      if (row === 13) row = 14;
+
+      const logicalRowIndex = row > 13 ? row - 2 : row - 1;
+      const existingRowSeats = currentSeats.filter(
+        (seat) => Number(seat.row_number) === row
       );
-      return;
-    }
 
-    const startRow = Number(newSeatRow);
-    const rowCount = Number(newRowCount);
-    const seatsPerRow = Number(newSeatCount);
-
-    if (!Number.isSafeInteger(startRow) || startRow < 1) {
-      setAddSeatError("Enter a valid starting row.");
-      return;
-    }
-
-    if (
-      !Number.isSafeInteger(rowCount) ||
-      rowCount < 1 ||
-      rowCount > 20
-    ) {
-      setAddSeatError("Enter between 1 and 20 rows.");
-      return;
-    }
-
-    if (
-      !Number.isSafeInteger(seatsPerRow) ||
-      seatsPerRow < 1 ||
-      seatsPerRow > 10
-    ) {
-      setAddSeatError("Enter between 1 and 10 seats per row.");
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const currentResult = await getRoomSeats(auditorium);
-      const currentSeats = currentResult.data?.seats || [];
-
-      const existingNumbers = new Set(
-        currentSeats.map((seat) => Number(seat.seat_number))
+      const occupiedPositions = new Set(
+        existingRowSeats.map((seat) => Number(seat.display_order))
       );
 
-      const newSeats = [];
-      let row = startRow;
+      const availablePositions = Array.from(
+        { length: 10 },
+        (_, index) => index + 1
+      ).filter((position) => !occupiedPositions.has(position));
 
-      for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-        // Skip row 13
-        if (row === 13) {
-          row = 14;
-        }
-
-        const existingRowSeats = currentSeats.filter(
-          (seat) => Number(seat.row_number) === row
+      if (availablePositions.length < seatsPerRow) {
+        setAddSeatError(
+          `Row ${row} does not have ${seatsPerRow} empty positions.`
         );
+        return;
+      }
 
-        const occupiedPositions = new Set(
-          existingRowSeats.map((seat) =>
-            Number(seat.display_order)
-          )
-        );
+      // Build the expected numbers for this row.
+      // Seat 13 is skipped globally.
+      const rowNumbers = Array.from({ length: 10 }, (_, index) => {
+        const sequentialNumber = logicalRowIndex * 10 + index + 1;
+        return sequentialNumber >= 13
+          ? sequentialNumber + 1
+          : sequentialNumber;
+      });
 
-        const availablePositions = Array.from(
-          { length: 10 },
-          (_, index) => index + 1
-        ).filter(
-          (position) => !occupiedPositions.has(position)
-        );
+      const isReversed = logicalRowIndex % 2 === 1;
 
-        if (availablePositions.length < seatsPerRow) {
+      for (const position of availablePositions.slice(0, seatsPerRow)) {
+        const seatNumber = isReversed
+          ? rowNumbers[10 - position]
+          : rowNumbers[position - 1];
+
+        if (existingNumbers.has(seatNumber)) {
           setAddSeatError(
-            `Row ${row} does not have ${seatsPerRow} empty positions.`
+            `Seat ${seatNumber} already exists. Check Row ${row}.`
           );
           return;
         }
 
-        // Keep the existing row-based numbering pattern
-        const logicalRowIndex =
-          row > 13 ? row - 2 : row - 1;
+        newSeats.push({
+          rowNumber: row,
+          seatNumber,
+          displayOrder: position,
+        });
 
-        const firstNumber = logicalRowIndex * 10 + 1;
-        const nextLogicalRowStart =
-          (logicalRowIndex + 1) * 10 + 1;
-
-        const maximumNumber =
-          row === 2
-            ? nextLogicalRowStart
-            : nextLogicalRowStart - 1;
-
-        let nextNumber = firstNumber;
-
-        for (const position of availablePositions.slice(
-          0,
-          seatsPerRow
-        )) {
-          while (
-            nextNumber === 13 ||
-            existingNumbers.has(nextNumber)
-          ) {
-            nextNumber++;
-          }
-
-          if (nextNumber > maximumNumber) {
-            setAddSeatError(
-              `Cannot generate valid seat numbers for Row ${row}.`
-            );
-            return;
-          }
-
-          newSeats.push({
-            rowNumber: row,
-            seatNumber: nextNumber,
-            displayOrder: position,
-          });
-
-          existingNumbers.add(nextNumber);
-          nextNumber++;
-        }
-
-        row++;
+        existingNumbers.add(seatNumber);
       }
 
-      await addRoomSeats(auditorium, newSeats);
-      await refreshRoomSeats();
-
-      setShowAddSeat(false);
-      setNewSeatRow(String(row === 13 ? 14 : row));
-      setNewRowCount("1");
-      clearSelection();
-    } catch (error) {
-      setAddSeatError(error.message);
-    } finally {
-      setLoading(false);
+      row++;
     }
+
+    await addRoomSeats(auditorium, newSeats);
+    await refreshRoomSeats();
+
+    setShowAddSeat(false);
+    setNewSeatRow(String(row === 13 ? 14 : row));
+    setNewRowCount("1");
+    clearSelection();
+  } catch (error) {
+    setAddSeatError(error.message || "Failed to add seats.");
+  } finally {
+    setLoading(false);
   }
+}
 
   // Change regular seat status
   async function handleEditSeat() {
