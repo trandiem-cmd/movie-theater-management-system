@@ -115,11 +115,15 @@ export async function getMovie(req, res) {
     let cast = []
     let writers = []
     let productionCompany = null
+    let backdropUrl = null
 
     
     if (movie.tmdb_id) {
       try {
         const tmdbMovie = await fetchTMDBMovie(movie.tmdb_id)
+        backdropUrl = tmdbMovie.backdrop_path
+      ? `https://image.tmdb.org/t/p/w1280${tmdbMovie.backdrop_path}`
+      : null
 
        
         cast = (tmdbMovie.credits?.cast || [])
@@ -156,6 +160,7 @@ export async function getMovie(req, res) {
       cast,
       writers,
       productionCompany,
+      backdrop_url: backdropUrl,
     })
   } catch (error) {
     console.error('Error fetching movie:', error)
