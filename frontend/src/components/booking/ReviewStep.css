@@ -1,0 +1,87 @@
+
+.review-step {
+  width: 100%;
+  max-width: 850px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.review-step h2 {
+  margin-bottom: 8px;
+}
+
+.review-intro {
+  margin-bottom: 24px;
+  color: #666;
+}
+
+.review-section {
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.review-section h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.review-section p {
+  margin: 8px 0;
+}
+
+.review-line,
+.review-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 12px 0;
+}
+
+.review-total {
+  padding-top: 16px;
+  margin-top: 16px;
+  border-top: 1px solid #ddd;
+  font-size: 1.1rem;
+}
+
+.review-expiry {
+  color: #a15c00;
+  font-size: 0.9rem;
+}
+
+.review-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.review-actions button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.review-back-button {
+  background: #e5e5e5;
+  color: #222;
+}
+
+.review-reserve-button {
+  background: #444;
+  color: white;
+}
+
+.review-buy-button {
+  background: #c62828;
+  color: white;
+}
+
+.review-actions button:hover {
+  opacity: 0.85;
+}
