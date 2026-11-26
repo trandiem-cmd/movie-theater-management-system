@@ -3,24 +3,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
-  Plus,
-  Search,
-  Pencil,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  Building2,
-  DoorOpen,
-  ArrowLeft,
-  MapPin,
-  Users,
+  Plus, Search, Pencil, Trash2, ChevronLeft, ChevronRight, Building2, DoorOpen, ArrowLeft, MapPin, Users,
 } from "lucide-react";
 
+import {getTheaters,getTheaterCities,createTheater,updateTheater,deleteTheaterAPI,getTheaterRooms,createRoom,updateRoom,deleteRoomAPI,
+} from "../../api.js";
 import AdminSidebar from "../../pages/admin/adminSidebar";
 import "./TheaterManagementPage.css";
 
-const THEATER_API = "/api/admin/theaters";
-const ROOM_API = "/api/admin/rooms";
 const PAGE_SIZE = 4;
 
 const emptyTheaterForm = {
@@ -98,61 +88,32 @@ function TheaterManagementPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Handle API responses and session authentication.
-  async function handleResponse(response, defaultMessage) {
-    const data = await response.json();
-
-    if (response.status === 401) {
-      navigate("/login");
-      throw new Error("Authentication required.");
-    }
-
-    if (response.status === 403) {
-      throw new Error("You do not have Admin permission.");
-    }
-
-    if (!response.ok) {
-      throw new Error(data.message || defaultMessage);
-    }
-
-    return data;
-  }
 
   // Load theaters.
-  async function loadTheaters() {
-    setLoading(true);
-    setError("");
+async function loadTheaters() {
+  setLoading(true);
+  setError("");
 
-    try {
-      const [theaterResponse, cityResponse] = await Promise.all([
-        fetch(THEATER_API, {
-          method: "GET",
-          credentials: "same-origin",
-        }),
-        fetch(`${THEATER_API}/cities`, {
-          method: "GET",
-          credentials: "same-origin",
-        }),
-      ]);
+  try {
+    const [theaterData, cityData] = await Promise.all([
+      getTheaters(),
+      getTheaterCities(),
+    ]);
 
-      const theaterData = await handleResponse(
-        theaterResponse,
-        "Could not load theaters."
-      );
-
-      const cityData = await handleResponse(
-        cityResponse,
-        "Could not load cities."
-      );
-
-      setTheaters(theaterData.data || []);
-      setCities(cityData.data || []);
-    } catch (err) {
-      setError(err.message || "Could not load theaters.");
-    } finally {
-      setLoading(false);
+    setTheaters(theaterData.data || []);
+    setCities(cityData.data || []);
+  } catch (err) {
+    if (err.message === "Authentication required.") {
+      navigate("/login");
+      return;
     }
+
+    setError(err.message || "Could not load theaters.");
+  } finally {
+    setLoading(false);
   }
+}
+
 
   useEffect(() => {
     loadTheaters();
@@ -246,32 +207,22 @@ function TheaterManagementPage() {
     try {
       const isEditing = Boolean(editingTheater);
 
-      const url = isEditing
-        ? `${THEATER_API}/${editingTheater.theater_id}`
-        : THEATER_API;
+      const theaterData = {
+      name: theaterForm.name.trim(),
+      address: theaterForm.address.trim(),
+      city: theaterForm.city.trim(),
+      phone: theaterForm.phone.trim() || null,
+      email: theaterForm.email.trim() || null,
+      description: theaterForm.description.trim() || null,
+      image_url: theaterForm.image_url.trim() || null,
+      status: theaterForm.status,
+      };
 
-      const response = await fetch(url, {
-        method: isEditing ? "PUT" : "POST",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: theaterForm.name.trim(),
-          address: theaterForm.address.trim(),
-          city: theaterForm.city.trim(),
-          phone: theaterForm.phone.trim() || null,
-          email: theaterForm.email.trim() || null,
-          description: theaterForm.description.trim() || null,
-          image_url: theaterForm.image_url.trim() || null,
-          status: theaterForm.status,
-        }),
-      });
-
-      await handleResponse(
-        response,
-        "Could not save the theater."
-      );
+      if (isEditing) {
+        await updateTheater(editingTheater.theater_id, theaterData);
+      } else {
+        await createTheater(theaterData);
+      }
 
       await loadTheaters();
 
@@ -285,11 +236,16 @@ function TheaterManagementPage() {
           : "Theater added successfully."
       );
     } catch (err) {
+      if (err.message === "Authentication required.") {
+        navigate("/login");
+        return;
+      }
+
       setError(err.message || "Could not save the theater.");
     } finally {
       setSaving(false);
     }
-  }
+}
 
   function cancelTheaterForm() {
     setShowTheaterForm(false);
@@ -299,76 +255,66 @@ function TheaterManagementPage() {
   }
 
   // Delete Theater.
-  async function deleteTheater(theater) {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${theater.name}"?`
+async function deleteTheater(theater) {
+  const confirmed = window.confirm(
+    `Are you sure you want to delete "${theater.name}"?`
+  );
+
+  if (!confirmed) return;
+
+  setError("");
+  setSuccess("");
+  setDeletingId(theater.theater_id);
+
+  try {
+    await deleteTheaterAPI(theater.theater_id);
+
+    setTheaters((current) =>
+      current.filter(
+        (item) => item.theater_id !== theater.theater_id
+      )
     );
 
-    if (!confirmed) return;
-
-    setError("");
-    setSuccess("");
-    setDeletingId(theater.theater_id);
-
-    try {
-      const response = await fetch(
-        `${THEATER_API}/${theater.theater_id}`,
-        {
-          method: "DELETE",
-          credentials: "same-origin",
-        }
-      );
-
-      await handleResponse(
-        response,
-        "Could not delete the theater."
-      );
-
-      setTheaters((current) =>
-        current.filter(
-          (item) => item.theater_id !== theater.theater_id
-        )
-      );
-
-      setSuccess("Theater deleted successfully.");
-    } catch (err) {
-      setError(err.message || "Could not delete the theater.");
-    } finally {
-      setDeletingId(null);
+    setSuccess("Theater deleted successfully.");
+  } catch (err) {
+    if (err.message === "Authentication required.") {
+      navigate("/login");
+      return;
     }
+
+    setError(err.message || "Could not delete the theater.");
+  } finally {
+    setDeletingId(null);
   }
+}
+
 
   // Load rooms for a selected theater.
-  async function openRooms(theater) {
-    setSelectedTheater(theater);
-    setShowRoomForm(false);
-    setEditingRoom(null);
-    setError("");
-    setSuccess("");
-    setRooms([]);
-    setRoomsLoading(true);
 
-    try {
-      const response = await fetch(
-        `${THEATER_API}/${theater.theater_id}/rooms`,
-        {
-          method: "GET",
-          credentials: "same-origin",
-        }
-      );
+async function openRooms(theater) {
+  setSelectedTheater(theater);
+  setShowRoomForm(false);
+  setEditingRoom(null);
+  setError("");
+  setSuccess("");
+  setRooms([]);
+  setRoomsLoading(true);
 
-      const data = await handleResponse(
-        response,
-        "Could not load rooms."
-      );
-
-      setRooms(data.data || []);
-    } catch (err) {
-      setError(err.message || "Could not load rooms.");
-    } finally {
-      setRoomsLoading(false);
+  try {
+    const data = await getTheaterRooms(theater.theater_id);
+    setRooms(data.data || []);
+  } catch (err) {
+    if (err.message === "Authentication required.") {
+      navigate("/login");
+      return;
     }
+
+    setError(err.message || "Could not load rooms.");
+  } finally {
+    setRoomsLoading(false);
   }
+}
+
 
   function backToTheaters() {
     setSelectedTheater(null);
@@ -407,70 +353,66 @@ function TheaterManagementPage() {
   }
 
   // Save Room.
-  async function saveRoom(event) {
-    event.preventDefault();
+async function saveRoom(event) {
+  event.preventDefault();
 
-    setError("");
-    setSuccess("");
+  setError("");
+  setSuccess("");
 
-    if (!roomForm.name.trim()) {
-      setError("Please enter a room name.");
-      return;
-    }
-
-    if (
-      !roomForm.capacity ||
-      !Number.isSafeInteger(Number(roomForm.capacity)) ||
-      Number(roomForm.capacity) <= 0
-    ) {
-      setError("Please enter a valid room capacity.");
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-      const isEditing = Boolean(editingRoom);
-
-      const url = isEditing
-        ? `${ROOM_API}/${editingRoom.room_id}`
-        : `${THEATER_API}/${selectedTheater.theater_id}/rooms`;
-
-      const response = await fetch(url, {
-        method: isEditing ? "PUT" : "POST",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: roomForm.name.trim(),
-          capacity: Number(roomForm.capacity),
-          status: roomForm.status,
-        }),
-      });
-
-      await handleResponse(
-        response,
-        "Could not save the room."
-      );
-
-      await openRooms(selectedTheater);
-
-      setShowRoomForm(false);
-      setEditingRoom(null);
-      setRoomForm({ ...emptyRoomForm });
-
-      setSuccess(
-        isEditing
-          ? "Room updated successfully."
-          : "Room added successfully."
-      );
-    } catch (err) {
-      setError(err.message || "Could not save the room.");
-    } finally {
-      setSaving(false);
-    }
+  if (!roomForm.name.trim()) {
+    setError("Please enter a room name.");
+    return;
   }
+
+  if (
+    !roomForm.capacity ||
+    !Number.isSafeInteger(Number(roomForm.capacity)) ||
+    Number(roomForm.capacity) <= 0
+  ) {
+    setError("Please enter a valid room capacity.");
+    return;
+  }
+
+  setSaving(true);
+
+  try {
+    const isEditing = Boolean(editingRoom);
+
+    const roomData = {
+      name: roomForm.name.trim(),
+      capacity: Number(roomForm.capacity),
+      status: roomForm.status,
+    };
+
+    if (isEditing) {
+      await updateRoom(editingRoom.room_id, roomData);
+    } else {
+      await createRoom(selectedTheater.theater_id, roomData);
+    }
+
+    const data = await getTheaterRooms(selectedTheater.theater_id);
+    setRooms(data.data || []);
+
+    setShowRoomForm(false);
+    setEditingRoom(null);
+    setRoomForm({ ...emptyRoomForm });
+
+    setSuccess(
+      isEditing
+        ? "Room updated successfully."
+        : "Room added successfully."
+    );
+  } catch (err) {
+    if (err.message === "Authentication required.") {
+      navigate("/login");
+      return;
+    }
+
+    setError(err.message || "Could not save the room.");
+  } finally {
+    setSaving(false);
+  }
+}
 
   function cancelRoomForm() {
     setShowRoomForm(false);
@@ -480,42 +422,37 @@ function TheaterManagementPage() {
   }
 
   // Delete Room.
-  async function deleteRoom(room) {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${room.name}"?`
+async function deleteRoom(room) {
+  const confirmed = window.confirm(
+    `Are you sure you want to delete "${room.name}"?`
+  );
+
+  if (!confirmed) return;
+
+  setError("");
+  setSuccess("");
+  setDeletingId(room.room_id);
+
+  try {
+    await deleteRoomAPI(room.room_id);
+
+    setRooms((current) =>
+      current.filter((item) => item.room_id !== room.room_id)
     );
 
-    if (!confirmed) return;
-
-    setError("");
-    setSuccess("");
-    setDeletingId(room.room_id);
-
-    try {
-      const response = await fetch(
-        `${ROOM_API}/${room.room_id}`,
-        {
-          method: "DELETE",
-          credentials: "same-origin",
-        }
-      );
-
-      await handleResponse(
-        response,
-        "Could not delete the room."
-      );
-
-      setRooms((current) =>
-        current.filter((item) => item.room_id !== room.room_id)
-      );
-
-      setSuccess("Room deleted successfully.");
-    } catch (err) {
-      setError(err.message || "Could not delete the room.");
-    } finally {
-      setDeletingId(null);
+    setSuccess("Room deleted successfully.");
+  } catch (err) {
+    if (err.message === "Authentication required.") {
+      navigate("/login");
+      return;
     }
+
+    setError(err.message || "Could not delete the room.");
+  } finally {
+    setDeletingId(null);
   }
+}
+
 
   // Logout.
   async function handleLogout() {
