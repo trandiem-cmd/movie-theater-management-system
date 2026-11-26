@@ -7,6 +7,7 @@ import SeatMap from "../../components/seat/SeatMap";
 import SeatLegend from "../../components/seat/SeatLegend";
 import MovieInfoCard from "../../components/movie/MovieInfoCard";
 import BookingProgress from "../../components/booking/BookingProgress";
+import ReservationSummary from "../../components/booking/ReservationSummary";
 
 import "./SeatSelectionPage.css";
 
@@ -197,33 +198,7 @@ function SeatSelectionPage() {
     ]);
   }
 
-  // Group selected seats using actual database rows
-  function formatSelectedSeats() {
-    const grouped = selectedSeats.reduce((groups, seatNumber) => {
-      const seat = seats.find((item) => item.number === seatNumber);
-
-      if (!seat) return groups;
-
-      if (!groups[seat.row]) {
-        groups[seat.row] = [];
-      }
-
-      groups[seat.row].push(seat.number);
-      return groups;
-    }, {});
-
-    return Object.entries(grouped)
-      .sort(([a], [b]) => Number(a) - Number(b))
-      .map(([row, numbers]) => {
-        numbers.sort((a, b) => a - b);
-
-        return `Row ${row}, ${
-          numbers.length === 1 ? "Seat" : "Seats"
-        } ${numbers.join(", ")}`;
-      })
-      .join(" | ");
-  }
-
+  
   return (
     <div className="seat-selection-page">
       {currentStep === 1 ? (
@@ -294,53 +269,21 @@ function SeatSelectionPage() {
               <SeatLegend isCustomer />
               </div>
             </section>
-
-            <aside className="seat-details-section">
-              <h2>Your Selection</h2>
-
-              {totalSelected === 0 ? (
-                <p>No seats selected yet.</p>
-              ) : (
-                <p>
-                  Seats Selected:{" "}
-                  <span style={{ color: "#D4AF37" }}>
-                    {[
-                      selectedSeats.length > 0
-                        ? formatSelectedSeats()
-                        : "",
-                      selectedWheelchairSpaces.length > 0
-                        ? selectedWheelchairSpaces
-                            .map(
-                              (number) => `Wheelchair Space ${number}`
-                            )
-                            .join(", ")
-                        : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" | ")}
-                  </span>
-                </p>
-              )}
-
-              {seatLimitError && (
-                <p className="seat-limit-error" role="alert">
-                  {seatLimitError}
-                </p>
-              )}
-
-              <button
-                type="button"
-                disabled={
-                  totalSelected === 0 ||
-                  seatsLoading ||
-                  Boolean(seatsError)
-                }
-                onClick={() => setCurrentStep(2)}
-              >
-                Continue to Booking
-              </button>
-            </aside>
-          </div>
+           <ReservationSummary
+            selectedSeats={selectedSeats}
+            selectedWheelchairSpaces={selectedWheelchairSpaces}
+            seats={seats}
+            seatLimitError={seatLimitError}
+            seatsLoading={seatsLoading}
+            seatsError={seatsError}
+            onClearSelection={() => {
+              setSelectedSeats([]);
+              setSelectedWheelchairSpaces([]);
+              setSeatLimitError("");
+            }}
+            onContinue={() => setCurrentStep(2)}
+          />
+        </div>
         </>
       ) : (
         <section className="booking-next-step">
