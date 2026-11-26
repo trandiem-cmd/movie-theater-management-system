@@ -8,6 +8,8 @@ function ReviewStep({
   onBack,
   onBuyNow,
   onReserve,
+  loading = false,
+  error = "",
 }) {
   const tickets = ticketSelection?.tickets ?? {};
   const prices = ticketSelection?.prices ?? {};
@@ -104,11 +106,18 @@ function ReviewStep({
         </p>
       )}
 
+      {error && (
+        <p className="review-error" role="alert">
+          {error}
+        </p>
+      )}
+
       <div className="review-actions">
         <button
           type="button"
           className="review-back-button"
           onClick={onBack}
+          disabled={loading}
         >
           Back to tickets
         </button>
@@ -118,8 +127,9 @@ function ReviewStep({
             type="button"
             className="review-reserve-button"
             onClick={onReserve}
+            disabled={loading}
           >
-            Reserve
+            {loading ? "Processing..." : "Reserve"}
           </button>
         )}
 
@@ -127,8 +137,9 @@ function ReviewStep({
           type="button"
           className="review-buy-button"
           onClick={onBuyNow}
+          disabled={loading}
         >
-          Buy Now
+          {loading ? "Processing..." : "Buy Now"}
         </button>
       </div>
     </section>

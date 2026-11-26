@@ -497,7 +497,6 @@ export const deleteRoomAPI = async (roomId) => {
 };
 // Seats
 // Showtimes
-// Bookings
 // Create a reservation
 export const createReservation = async ({
   showtimeId,
@@ -548,4 +547,28 @@ export const updateReservation = async ({
   );
 
   return handleResponse(response, "Failed to update reservation");
+};
+// Bookings
+
+export const createBooking = async ({
+  reservationId,
+  bookingType,
+  tickets,
+  customerEmail,
+}) => {
+  const response = await fetch(`${BASE_URL}/bookings`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      reservationId,
+      bookingType,
+      tickets,
+      customerEmail,
+    }),
+  });
+
+  return handleResponse(response, "Failed to create booking");
 };

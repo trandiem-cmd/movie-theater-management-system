@@ -1,8 +1,11 @@
+
 import { useEffect, useRef, useState } from "react";
+
 import {
   getCurrentUser,
   createReservation,
   updateReservation,
+  createBooking,
 } from "../../api";
 
 import TicketSelection from "../../pages/customer/TicketSelection";
@@ -22,12 +25,17 @@ function BookingFlow({
   const [currentUser, setCurrentUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [reservationLoading, setReservationLoading] = useState(false);
+  const [bookingLoading, setBookingLoading] = useState(false);
+
   const [currentStep, setCurrentStep] = useState("checking");
   const [customerType, setCustomerType] = useState(null);
+
   const [error, setError] = useState("");
   const [reservation, setReservation] = useState(null);
   const [ticketSelection, setTicketSelection] = useState(null);
+  const [booking, setBooking] = useState(null);
 
+  const bookingRequestLock = useRef(false);
   const previousSyncKey = useRef(syncKey);
 
   function goToStep(step, progressStep) {
@@ -155,7 +163,6 @@ function BookingFlow({
 
       try {
         const result = await getCurrentUser();
-
         if (cancelled) return;
 
         const user = result?.data ?? result;
@@ -200,8 +207,7 @@ function BookingFlow({
     };
   }, []);
 
-  // Update the existing reservation when the customer changes seats
-  // and continues from the seat map.
+  // Update the existing reservation when selected seats change.
   useEffect(() => {
     if (previousSyncKey.current === syncKey) {
       return;
@@ -209,8 +215,6 @@ function BookingFlow({
 
     previousSyncKey.current = syncKey;
 
-    // No reservation exists yet. The normal guest/sign-in flow
-    // will create one using the latest selected seats.
     if (!reservation?.reservationId) {
       setTicketSelection(null);
       return;
@@ -227,8 +231,8 @@ function BookingFlow({
 
         if (cancelled) return;
 
-        // Reset the old ticket quantities and Review information.
         setTicketSelection(null);
+        setBooking(null);
         goToStep("tickets", 3);
       } catch (err) {
         if (cancelled) return;
@@ -251,7 +255,7 @@ function BookingFlow({
     return () => {
       cancelled = true;
     };
-    // This effect should run only when the seat-map sync key changes.
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [syncKey]);
 
@@ -317,8 +321,6 @@ function BookingFlow({
     setReservationLoading(true);
 
     try {
-      // If a reservation already exists, update it instead of
-      // creating another reservation.
       if (reservation?.reservationId) {
         await updateSeatReservation();
 
@@ -360,26 +362,81 @@ function BookingFlow({
     goToStep("tickets", 3);
   }
 
-  function handleBuyNow() {
-    // Payment has not been implemented yet.
-    console.log("Buy Now clicked", {
-      reservation,
-      ticketSelection,
-    });
-  }
-
-  function handleReserve() {
-    // This option is available only to registered customers.
-    if (customerType !== "registered") {
+  // Create a Booking from the current Reservation.
+  async function handleCreateBooking(bookingType) {
+    if (bookingRequestLock.current || bookingLoading) {
       return;
     }
 
-    console.log("Reserve clicked", {
-      reservation,
-      ticketSelection,
-    });
+    if (!reservation?.reservationId) {
+      setError("Reservation could not be found. Please try again.");
+      return;
+    }
+
+    if (!ticketSelection?.tickets) {
+      setError("Ticket selection could not be found.");
+      return;
+    }
+
+    if (
+      bookingType === "reserve" &&
+      customerType !== "registered"
+    ) {
+      setError("Please sign in to reserve tickets.");
+      return;
+    }
+
+    bookingRequestLock.current = true;
+    setBookingLoading(true);
+    setError("");
+
+    try {
+      const result = await createBooking({
+        reservationId: reservation.reservationId,
+        bookingType,
+        customerEmail:
+          reservation.customerEmail || currentUser?.email,
+        tickets: {
+          regular: Number(ticketSelection.tickets.regular),
+          child: Number(ticketSelection.tickets.child),
+          wheelchair: Number(ticketSelection.tickets.wheelchair),
+        },
+      });
+
+      if (!result?.success || !result?.data) {
+        throw new Error(
+          result?.message || "Could not create your booking."
+        );
+      }
+
+      setBooking(result.data);
+
+      // Step 5 is the Booking/Payment step.
+      goToStep("booking-created", 5);
+    } catch (err) {
+      setError(
+        err.message || "Failed to create booking. Please try again."
+      );
+    } finally {
+      bookingRequestLock.current = false;
+      setBookingLoading(false);
+    }
   }
 
+  function handleBuyNow() {
+    handleCreateBooking("buy_now");
+  }
+
+  function handleReserve() {
+    if (customerType !== "registered") {
+      setError("Please sign in to reserve tickets.");
+      return;
+    }
+
+    handleCreateBooking("reserve");
+  }
+
+  // Loading states.
   if (authLoading || currentStep === "checking") {
     return (
       <div className="booking-flow">
@@ -392,6 +449,15 @@ function BookingFlow({
     return (
       <div className="booking-flow">
         <p>Updating your reservation...</p>
+      </div>
+    );
+  }
+
+  if (bookingLoading) {
+    return (
+      <div className="booking-flow">
+        <p>Creating your booking...</p>
+        <p>Please do not close this page.</p>
       </div>
     );
   }
@@ -414,30 +480,30 @@ function BookingFlow({
     );
   }
 
-    if (currentStep === "sign-in") {
+  if (currentStep === "sign-in") {
     return (
-        <div className="booking-flow">
+      <div className="booking-flow">
         <h2>Continue with your booking</h2>
 
         <p>
-            Sign in to use your registered account, or continue as a
-            guest using your email address.
+          Sign in to use your registered account, or continue as a
+          guest using your email address.
         </p>
 
         {error && <p className="error-message">{error}</p>}
 
         <GuestBookingForm
-            onContinue={(type, email) => {
+          onContinue={(type, email) => {
             if (type === "guest") {
-                handleGuestContinue(email);
+              handleGuestContinue(email);
             } else if (type === "registered") {
-                handleRegisteredContinue();
+              handleRegisteredContinue();
             }
-            }}
+          }}
         />
-        </div>
+      </div>
     );
-    }
+  }
 
   if (currentStep === "tickets") {
     return (
@@ -473,7 +539,76 @@ function BookingFlow({
           onBack={handleBackToTickets}
           onBuyNow={handleBuyNow}
           onReserve={handleReserve}
+          loading={bookingLoading}
+          error={error}
         />
+      </div>
+    );
+  }
+
+  // Booking created successfully.
+  if (currentStep === "booking-created" && booking) {
+    const isReserve = booking.bookingType === "reserve";
+
+    return (
+      <div className="booking-flow booking-result">
+        <h2>
+          {isReserve
+            ? "Reservation booking created"
+            : "Online booking created"}
+        </h2>
+
+        <p>
+          Your booking has been created successfully.
+        </p>
+
+        <div className="booking-result-details">
+          <p>
+            <strong>Booking code:</strong>{" "}
+            {booking.bookingCode}
+          </p>
+
+          <p>
+            <strong>Total amount:</strong>{" "}
+            {Number(booking.totalAmount).toFixed(2)}{" "}
+            {booking.currency || "EUR"}
+          </p>
+
+          <p>
+            <strong>Booking status:</strong>{" "}
+            {booking.status}
+          </p>
+
+          <p>
+            <strong>Payment status:</strong>{" "}
+            {booking.paymentStatus}
+          </p>
+
+          <p>
+            <strong>Expires at:</strong>{" "}
+            {booking.expiresAt
+              ? new Date(booking.expiresAt).toLocaleString()
+              : "Not specified"}
+          </p>
+        </div>
+
+        {isReserve ? (
+          <div>
+            <h3>Payment at the counter</h3>
+            <p>
+              Please pay at the cinema counter before your
+              booking expires.
+            </p>
+          </div>
+        ) : (
+          <div>
+            <h3>Online payment</h3>
+            <p>
+              Your booking has been created. Stripe Checkout
+              integration is the next step.
+            </p>
+          </div>
+        )}
       </div>
     );
   }

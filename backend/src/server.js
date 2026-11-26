@@ -15,7 +15,7 @@ import locationRoutes from "./routes/location.routes.js";
 import { getShowtimeSeats } from "./controllers/seat.controller.js";
 import reservationRoutes from "./routes/reservation.routes.js";
 import pricingRoutes from "./routes/pricing.routes.js";
-
+import bookingRoutes from "./routes/booking.routes.js";
 
 
 
@@ -116,12 +116,17 @@ app.get("/api/showtimes/:id/seats", getShowtimeSeats);
 
 
 app.use('/api/theaters', locationRoutes);
-// Start server
-app.listen(PORT, () => {
-  console.log(`RIO Cinema API listening at http://localhost:${PORT}`);
-});
+
 // Reservation Management
 app.use("/api/reservations", reservationRoutes);
 
 // Pricing Management
 app.use("/api/pricing", pricingRoutes);
+
+// Booking
+app.use("/api/bookings", bookingRoutes);
+
+// Start server - keep this last
+app.listen(PORT, () => {
+  console.log(`RIO Cinema API listening at http://localhost:${PORT}`);
+});
