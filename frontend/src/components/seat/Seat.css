@@ -1,0 +1,102 @@
+.seat {
+  width: 36px;
+  height: 30px;
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+  border: 0;
+  border-radius: 6px 6px 4px 4px;
+
+  background: linear-gradient(
+    180deg,
+    #38ed83 0%,
+    #12b85c 45%,
+    #067436 100%
+  );
+
+  box-shadow:
+    inset 0 3px 2px rgba(255, 255, 255, 0.35),
+    inset 0 -4px 2px rgba(0, 0, 0, 0.25),
+    0 3px 0 #034e26;
+
+  color: #065e2d;
+  cursor: pointer;
+
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.seat svg {
+  filter: drop-shadow(
+    0 1px 0 rgba(255, 255, 255, 0.25)
+  );
+}
+
+.seat:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.15);
+}
+
+.seat--selected {
+  background: linear-gradient(
+    #ffe879,
+    #e8ac1c,
+    #a36b08
+  );
+  box-shadow:
+    inset 0 2px 2px #fff2aa,
+    0 3px 0 #714a05;
+  color: #8b5a00;
+}
+
+.seat--booked {
+  background: linear-gradient(
+    #ff6969,
+    #cf2433,
+    #8a1020
+  );
+  box-shadow:
+    inset 0 2px 2px #ffaaaa,
+    0 3px 0 #5c0a14;
+  color: #850f1c;
+  cursor: not-allowed;
+}
+
+.seat--held {
+  background: linear-gradient(
+    #bfbfbf,
+    #777,
+    #454545
+  );
+  box-shadow:
+    inset 0 2px 2px #eee,
+    0 3px 0 #303030;
+  color: #555;
+  cursor: not-allowed;
+}
+
+.seat--wheelchair {
+  background: linear-gradient(
+    #4da0ff,
+    #1759d1
+  );
+  box-shadow:
+    inset 0 2px 2px #b1d7ff,
+    0 3px 0 #103b83;
+  color: white;
+}
+
+.seat--unavailable {
+  background: #383838;
+  box-shadow: 0 3px 0 #202020;
+  color: #777;
+  cursor: not-allowed;
+}
+
+.seat:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 3px;
+}

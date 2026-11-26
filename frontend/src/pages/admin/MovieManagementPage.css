@@ -549,3 +549,177 @@ select {
     flex: 1;
   }
 }
+
+
+
+
+/* ========================================
+   TMDB SEARCH AND MOVIE AUTOFILL
+   Styles added for the TMDB integration.
+======================================== */
+
+/* TMDB search container in the Add Movie form. */
+.tmdb-search-section {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 32px;
+  padding: 20px 24px;
+  border: 1px solid #b68c00;
+  border-radius: 16px;
+  background: transparent;
+}
+
+.tmdb-search-section > label {
+  display: block;
+  margin-bottom: 12px;
+}
+
+/* Search input and button displayed side by side. */
+.tmdb-search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tmdb-search-row input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 18px;
+  border: 1px solid #b68c00;
+  border-radius: 30px;
+  background: #111;
+  color: white;
+  font: inherit;
+}
+
+.tmdb-search-row button {
+  flex-shrink: 0;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 30px;
+  background: #e9b52c;
+  color: #111;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Display matching TMDB movies in a scrollable list. */
+.tmdb-results {
+  margin-top: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Each result shows the movie poster, title, and release year. */
+.tmdb-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 4px;
+  background: transparent;
+  color: white;
+  border: none;
+  border-bottom: 1px solid #363025;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.tmdb-result:hover {
+  background: #201b10;
+}
+
+.tmdb-result img,
+.tmdb-no-poster {
+  width: 40px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* Show a placeholder when TMDB has no movie poster. */
+.tmdb-no-poster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #242424;
+  color: #aaa;
+}
+
+.tmdb-result-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.tmdb-result-info strong {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.tmdb-result-info span {
+  font-size: 13px;
+  color: #aaa;
+}
+
+.tmdb-result-arrow {
+  color: #e9b52c;
+}
+
+/* Adjust the TMDB search layout for smaller screens. */
+@media (max-width: 650px) {
+  .tmdb-search-section {
+    padding: 15px;
+  }
+
+  .tmdb-search-row {
+    gap: 8px;
+  }
+
+  .tmdb-search-row button {
+    padding: 12px 15px;
+  }
+}
+
+/* Custom scrollbar for the TMDB search results list. */
+.tmdb-results {
+  scrollbar-width: thin;
+  scrollbar-color: #b68c00 #171717;
+}
+
+.tmdb-results::-webkit-scrollbar {
+  width: 7px;
+}
+
+.tmdb-results::-webkit-scrollbar-track {
+  background: #171717;
+  border-radius: 10px;
+}
+
+.tmdb-results::-webkit-scrollbar-thumb {
+  background: #b68c00;
+  border-radius: 10px;
+}
+
+.tmdb-results::-webkit-scrollbar-thumb:hover {
+  background: #e9b52c;
+}
+
+/* Message displayed when TMDB search finds no matching movies. */
+.tmdb-no-results {
+  margin-top: 16px;
+  padding: 14px 16px;
+  color: #d9d9d9;
+  background: #1a1a1a;
+  border: 1px solid #5a4710;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 15px;
+}

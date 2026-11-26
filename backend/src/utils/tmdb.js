@@ -1,7 +1,6 @@
-
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 
-
+// Fetch movie details, including credits, videos, and release dates.
 export async function fetchTMDBMovie(tmdbId) {
   const token = process.env.TMDB_TOKEN;
 
@@ -10,7 +9,7 @@ export async function fetchTMDBMovie(tmdbId) {
   }
 
   const response = await fetch(
-   `${TMDB_BASE_URL}/movie/${tmdbId}?language=en-US&append_to_response=credits,videos,release_dates`,
+    `${TMDB_BASE_URL}/movie/${tmdbId}?language=en-US&append_to_response=credits,videos,release_dates`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -26,7 +25,7 @@ export async function fetchTMDBMovie(tmdbId) {
   return response.json();
 }
 
-
+// Search TMDB movies by title.
 export async function searchTMDBMovie(title) {
   const token = process.env.TMDB_TOKEN;
 

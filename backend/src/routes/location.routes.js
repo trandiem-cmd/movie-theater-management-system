@@ -1,3 +1,4 @@
+
 import express from 'express';
 import { getCities, getTheatersByCity, getTheaterDetails, getRoomsByTheater} from '../controllers/location.controller.js';
 

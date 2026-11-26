@@ -1,6 +1,9 @@
 
 import pool from "../config/database.js";
 import { validateMovie } from "../validators/movie.validator.js";
+// TMDB helpers used for admin movie search and movie details.
+import { searchTMDBMovie, fetchTMDBMovie } from "../utils/tmdb.js";
+
 
 // GET /api/admin/movies
 export async function getAdminMovies(req, res) {
@@ -57,6 +60,66 @@ export async function getAdminMovies(req, res) {
     });
   }
 }
+
+
+ // GET /api/admin/movies/tmdb/search?q=Avatar
+ // Search TMDB by title so the admin can choose a movie to add.
+ export async function searchAdminTMDBMovies(req, res) {
+   try {
+     const q = req.query.q;
+
+     if (typeof q !== "string" || !q.trim()) {
+       return res.status(400).json({
+         success: false,
+         message: "Movie title is required",
+       });
+     }
+
+     const movies = await searchTMDBMovie(q.trim());
+
+     return res.status(200).json({
+       success: true,
+       data: movies,
+     });
+   } catch (error) {
+     console.error("TMDB search error:", error);
+
+     return res.status(502).json({
+       success: false,
+       message: "Failed to search TMDB movies",
+     });
+   }
+ }
+
+ // GET /api/admin/movies/tmdb/:tmdbId
+ // Fetch full TMDB details to automatically fill the Add Movie form.
+ export async function getAdminTMDBMovieDetails(req, res) {
+   try {
+     const tmdbId = Number(req.params.tmdbId);
+
+     if (!Number.isSafeInteger(tmdbId) || tmdbId <= 0) {
+       return res.status(400).json({
+         success: false,
+         message: "Invalid TMDB movie ID",
+       });
+     }
+
+     const movie = await fetchTMDBMovie(tmdbId);
+
+     return res.status(200).json({
+       success: true,
+       data: movie,
+     });
+   } catch (error) {
+     console.error("TMDB movie details error:", error);
+
+     return res.status(502).json({
+       success: false,
+       message: "Failed to fetch TMDB movie details",
+     });
+   }
+ }
+
 
 // POST /api/admin/movies
 export async function createMovie(req, res) {
