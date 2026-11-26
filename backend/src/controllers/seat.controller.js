@@ -121,12 +121,11 @@ export async function addRoomSeats(req, res) {
       return sendError(res, 404, "Room not found");
     }
 
-    // Wheelchair spaces count towards capacity.
+  // Only regular seats count towards room capacity.
     const countResult = await client.query(
-      `SELECT
-         (SELECT COUNT(*) FROM seats WHERE room_id = $1) +
-         (SELECT COUNT(*) FROM wheelchair_spaces WHERE room_id = $1)
-         AS total`,
+      `SELECT COUNT(*) AS total
+      FROM seats
+      WHERE room_id = $1`,
       [roomId]
     );
 
@@ -456,6 +455,68 @@ export async function deleteSeat(req, res) {
   }
 }
 
+export async function deleteWheelchairSpace(req, res) {
+  const spaceId = Number(req.params.id);
+
+  if (!isValidId(spaceId)) {
+    return sendError(res, 400, "Invalid wheelchair space ID");
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    const spaceResult = await client.query(
+      "SELECT wheelchair_space_id FROM wheelchair_spaces WHERE wheelchair_space_id = $1 FOR UPDATE",
+      [spaceId]
+    );
+
+    if (spaceResult.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return sendError(res, 404, "Wheelchair space not found");
+    }
+
+    // Keep wheelchair spaces with reservation history.
+    const allocationResult = await client.query(
+      `SELECT 1
+       FROM showtime_seat_allocations
+       WHERE wheelchair_space_id = $1
+       LIMIT 1`,
+      [spaceId]
+    );
+
+    if (allocationResult.rows.length > 0) {
+      await client.query("ROLLBACK");
+
+      return sendError(
+        res,
+        409,
+        "This wheelchair space has reservation history. Deactivate it instead."
+      );
+    }
+
+    await client.query(
+      "DELETE FROM wheelchair_spaces WHERE wheelchair_space_id = $1",
+      [spaceId]
+    );
+
+    await client.query("COMMIT");
+
+    return res.status(200).json({
+      success: true,
+      message: "Wheelchair space deleted successfully",
+    });
+
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Delete wheelchair space error:", error);
+    return sendError(res, 500, "Failed to delete wheelchair space");
+  } finally {
+    client.release();
+  }
+}
+
 // DELETE /api/admin/rooms/:id/rows/:rowNumber/seats
 export async function deleteSeatRow(req, res) {
   const roomId = Number(req.params.id);
@@ -733,24 +794,6 @@ export async function addWheelchairSpace(req, res) {
       );
     }
 
-    const countResult = await client.query(
-      `SELECT
-         (SELECT COUNT(*) FROM seats WHERE room_id = $1) +
-         (SELECT COUNT(*) FROM wheelchair_spaces WHERE room_id = $1)
-         AS total`,
-      [roomId]
-    );
-
-    if (Number(countResult.rows[0].total) >= capacity) {
-      await client.query("ROLLBACK");
-
-      return sendError(
-        res,
-        400,
-        "Room capacity would be exceeded"
-      );
-    }
-
     const result = await client.query(
       `INSERT INTO wheelchair_spaces
          (room_id, space_number, status)
@@ -851,7 +894,7 @@ export async function generateSeatLayout(req, res) {
 
     // Keep existing wheelchair spaces, including inactive ones.
     const finalWheelchairCount = wheelchairCount;
-    const regularCount = capacity - finalWheelchairCount;
+    const regularCount = capacity;
 
     const expectedSeats = [];
     let nextSeatNumber = 1;

@@ -41,6 +41,7 @@ import {
   deleteSeatRow,
   updateWheelchairSpace,
   addWheelchairSpace,
+  deleteWheelchairSpace,
   generateSeatLayout,
 } from "../controllers/seat.controller.js";
 
@@ -102,6 +103,7 @@ router.put("/wheelchair-spaces/:id", updateWheelchairSpace);
 router.delete("/seats/:id", deleteSeat);
 router.delete("/rooms/:id/rows/seats", deleteSeatRows);
 router.delete("/rooms/:id/rows/:rowNumber/seats", deleteSeatRow);
+router.delete("/wheelchair-spaces/:id", deleteWheelchairSpace);
 
 
 // THEATER MANAGEMENT

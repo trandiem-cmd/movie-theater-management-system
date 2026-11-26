@@ -17,6 +17,7 @@ import {
   addRoomSeats,
   updateSeat,
   deleteSeat,
+  deleteWheelchairSpace,
   deleteSeatRows,
   updateWheelchairSpace,
   addWheelchairSpace,
@@ -558,6 +559,32 @@ async function handleAddSeat(event) {
     }
   }
 
+  async function handleDeleteWheelchairSpace() {
+  if (!selectedWheelchair || !canManageSeats) return;
+
+  const confirmed = window.confirm(
+    `Are you sure you want to delete wheelchair space W${selectedWheelchair.spaceNumber}?`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    setLoading(true);
+    setSeatError("");
+
+    await deleteWheelchairSpace(selectedWheelchair.id);
+    await refreshRoomSeats();
+
+    setSelectedWheelchairId(null);
+  } catch (error) {
+    setSeatError(
+      error.message || "Failed to delete wheelchair space."
+    );
+  } finally {
+    setLoading(false);
+  }
+}
+
   // Manage custom room rules
   function handleAddRule(event) {
     event.preventDefault();
@@ -760,18 +787,6 @@ async function handleAddSeat(event) {
                   : "Generate Layout"}
               </button>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setAddSeatError(
-                    "Seat numbering preview is not ready yet. No seats have been saved."
-                  );
-                  closeForms();
-                  setShowAddSeat(true);
-                }}
-              >
-                Preview Seats
-              </button>
 
               <button
                 type="button"
@@ -1210,6 +1225,16 @@ async function handleAddSeat(event) {
                     >
                       <Accessibility size={18} />
                       Add Wheelchair Space
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={!canManageSeats || !selectedWheelchair}
+                      className="seat-admin-delete-row-button"
+                      onClick={handleDeleteWheelchairSpace}
+                    >
+                      <Trash2 size={18} />
+                      Delete Wheelchair Space
                     </button>
                   </div>
                 </section>

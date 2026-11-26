@@ -333,6 +333,19 @@ export const deleteSeat = async (seatId) => {
   return handleResponse(response, "Failed to delete seat");
 };
 
+// Delete wheelchair space
+export const deleteWheelchairSpace = async (spaceId) => {
+  const response = await fetch(
+    `${BASE_URL}/admin/wheelchair-spaces/${spaceId}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    }
+  );
+
+  return handleResponse(response, "Failed to delete wheelchair space");
+};
+
 // Delete one row
 export const deleteSeatRow = async (roomId, rowNumber) => {
   const response = await fetch(
