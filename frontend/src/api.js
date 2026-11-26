@@ -390,3 +390,54 @@ export const getAdminShowtimes = async () => {
 // Seats
 // Showtimes
 // Bookings
+// Create a reservation
+export const createReservation = async ({
+  showtimeId,
+  customerEmail,
+  seatIds,
+  wheelchairSpaceIds,
+}) => {
+  const response = await fetch(`${BASE_URL}/reservations`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      showtimeId,
+      customerEmail,
+      seatIds,
+      wheelchairSpaceIds,
+    }),
+  });
+
+  return handleResponse(response, "Failed to create reservation");
+};
+
+// Update an existing reservation
+export const updateReservation = async ({
+  reservationId,
+  showtimeId,
+  customerEmail,
+  seatIds,
+  wheelchairSpaceIds,
+}) => {
+  const response = await fetch(
+    `${BASE_URL}/reservations/${reservationId}`,
+    {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        showtimeId,
+        customerEmail,
+        seatIds,
+        wheelchairSpaceIds,
+      }),
+    }
+  );
+
+  return handleResponse(response, "Failed to update reservation");
+};

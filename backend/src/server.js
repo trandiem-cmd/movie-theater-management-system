@@ -13,6 +13,8 @@ import adminRoutes from "./routes/admin.routes.js";
 import seatRoutes from "./routes/seat.routes.js";
 import locationRoutes from "./routes/location.routes.js";
 import { getShowtimeSeats } from "./controllers/seat.controller.js";
+import reservationRoutes from "./routes/reservation.routes.js";
+import pricingRoutes from "./routes/pricing.routes.js";
 
 
 
@@ -118,3 +120,8 @@ app.use('/api/theaters', locationRoutes);
 app.listen(PORT, () => {
   console.log(`RIO Cinema API listening at http://localhost:${PORT}`);
 });
+// Reservation Management
+app.use("/api/reservations", reservationRoutes);
+
+// Pricing Management
+app.use("/api/pricing", pricingRoutes);

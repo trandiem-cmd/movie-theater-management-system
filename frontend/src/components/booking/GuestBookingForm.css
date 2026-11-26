@@ -1,0 +1,151 @@
+
+.guest-booking-form {
+  width: 100%;
+  max-width: 520px;
+  margin: 32px auto;
+  padding: 32px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.guest-booking-form h1 {
+  margin: 0 0 8px;
+  color: #171717;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.guest-booking-form > p {
+  margin: 0 0 24px;
+  color: #666666;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.guest-booking-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guest-booking-form label {
+  margin-top: 8px;
+  color: #333333;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.guest-booking-form input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #171717;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.guest-booking-form input:focus {
+  border-color: #b3262e;
+  box-shadow: 0 0 0 3px rgba(179, 38, 46, 0.12);
+}
+
+.guest-booking-form form p {
+  margin: 4px 0 8px;
+  text-align: right;
+  font-size: 13px;
+}
+
+.guest-booking-form a {
+  color: #b3262e;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.guest-booking-form a:hover {
+  text-decoration: underline;
+}
+
+.guest-booking-form button {
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 7px;
+  background: #b3262e;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.guest-booking-form button:hover:not(:disabled) {
+  background: #901d24;
+}
+
+.guest-booking-form button:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.guest-booking-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.guest-booking-form .guest-booking-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 24px 0;
+  color: #888888;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.guest-booking-form .guest-booking-divider::before,
+.guest-booking-form .guest-booking-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.guest-booking-form > button {
+  background: #ffffff;
+  color: #b3262e;
+  border: 1px solid #b3262e;
+}
+
+.guest-booking-form > button:hover:not(:disabled) {
+  background: #fff4f4;
+}
+
+.guest-booking-form > p:last-child {
+  margin: 22px 0 0;
+  text-align: center;
+  font-size: 14px;
+}
+
+.guest-booking-form [role="alert"] {
+  margin: 4px 0;
+  color: #b3262e;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .guest-booking-form {
+    margin: 20px auto;
+    padding: 22px 18px;
+    border-radius: 10px;
+  }
+
+  .guest-booking-form h1 {
+    font-size: 23px;
+  }
+}

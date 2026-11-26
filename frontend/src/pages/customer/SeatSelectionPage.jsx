@@ -9,6 +9,7 @@ import MovieInfoCard from "../../components/movie/MovieInfoCard";
 import BookingProgress from "../../components/booking/BookingProgress";
 
 import "./SeatSelectionPage.css";
+import BookingFlow from "../../components/booking/BookingFlow";
 
 function SeatSelectionPage() {
   const { id: showtimeId } = useParams();
@@ -30,6 +31,8 @@ function SeatSelectionPage() {
   const [selectedWheelchairSpaces, setSelectedWheelchairSpaces] = useState([]);
   const [seatLimitError, setSeatLimitError] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
+  const [hasStartedBooking, setHasStartedBooking] = useState(false);
+  const [syncKey, setSyncKey] = useState(0);
 
   const formattedShowtime = showtime
     ? {
@@ -223,6 +226,14 @@ function SeatSelectionPage() {
       })
       .join(" | ");
   }
+  function handleContinueToBooking() {
+  if (hasStartedBooking) {
+    setSyncKey((previous) => previous + 1);
+  }
+
+  setHasStartedBooking(true);
+  setCurrentStep(2);
+}
 
   return (
     <div className="seat-selection-page">
@@ -262,7 +273,7 @@ function SeatSelectionPage() {
         }}
       />
 
-      {currentStep === 1 ? (
+      {currentStep === 1 && (
         <>
           <h1>Select Your Seats</h1>
           <p>Choose your preferred seats for this showtime.</p>
@@ -328,29 +339,39 @@ function SeatSelectionPage() {
                 </p>
               )}
 
-              <button
-                type="button"
-                disabled={
-                  totalSelected === 0 ||
-                  seatsLoading ||
-                  Boolean(seatsError)
-                }
-                onClick={() => setCurrentStep(2)}
-              >
-                Continue to Booking
-              </button>
+            <button
+              type="button"
+              disabled={
+                totalSelected === 0 ||
+                seatsLoading ||
+                Boolean(seatsError)
+              }
+              onClick={handleContinueToBooking}
+            >
+              Continue to Booking
+            </button>
             </aside>
           </div>
         </>
-      ) : (
-        <section className="booking-next-step">
-          <h2>Sign in / Continue as Guest</h2>
-          <div className="booking-placeholder">
-            Sign-in and guest booking options will be available
-            when connected to the booking system.
-          </div>
-        </section>
       )}
+      {hasStartedBooking && (
+  <div
+    style={{
+      display: currentStep === 1 ? "none" : "block",
+    }}
+  >
+    <BookingFlow
+      selectedSeats={selectedSeats}
+      selectedWheelchairSpaces={selectedWheelchairSpaces}
+      seats={seats}
+      wheelchairSpaces={wheelchairSpaces}
+      showtime={formattedShowtime}
+      showtimeId={showtimeId}
+      onStepChange={setCurrentStep}
+      syncKey={syncKey}
+    />
+  </div>
+)}
     </div>
   );
 }
