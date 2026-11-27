@@ -16,7 +16,7 @@ import { getShowtimeSeats } from "./controllers/seat.controller.js";
 import reservationRoutes from "./routes/reservation.routes.js";
 import pricingRoutes from "./routes/pricing.routes.js";
 import bookingRoutes from "./routes/booking.routes.js";
-
+import paymentRoutes from "./routes/payment.routes.js";
 
 
 dotenv.config();
@@ -45,6 +45,13 @@ app.use((req, _res, next) => {
   console.log(`${req.method} ${req.path}`);
   next();
 });
+
+// Stripe webhook MUST be registered before express.json()
+app.use(
+  "/api/stripe",
+  express.raw({ type: "application/json" }),
+  paymentRoutes
+);
 
 // Parse JSON request bodies
 app.use(express.json());

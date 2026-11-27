@@ -1,5 +1,6 @@
 import pool from "../config/database.js";
 import { randomBytes } from "node:crypto";
+import { createCheckoutSessionForBooking } from "./payment.controller.js";
 
 const isValidId = (value) =>
   Number.isSafeInteger(value) && value > 0;
@@ -29,6 +30,11 @@ function fromCents(value) {
   return (value / 100).toFixed(2);
 }
 
+// Normalize email for comparison.
+function normalizeEmail(email) {
+  return String(email || "").trim().toLowerCase();
+}
+
 // POST /api/bookings
 export async function createBooking(req, res) {
   const {
@@ -38,17 +44,17 @@ export async function createBooking(req, res) {
     customerEmail,
   } = req.body || {};
 
-  // Validate reservation ID.
+  // 1. Validate reservation ID.
   if (!isValidId(reservationId)) {
     return sendError(res, 400, "Invalid reservation ID");
   }
 
-  // Validate booking type.
+  // 2. Validate booking type.
   if (!["reserve", "buy_now"].includes(bookingType)) {
     return sendError(res, 400, "Invalid booking type");
   }
 
-  // Validate ticket quantities.
+  // 3. Validate ticket quantities.
   const {
     regular,
     child,
@@ -73,9 +79,10 @@ export async function createBooking(req, res) {
     );
   }
 
-  // Registered customers only for Reserve.
+  // 4. Get current logged-in user.
   const sessionUserId = req.session?.user?.user_id ?? null;
 
+  // Reserve is only available to registered customers.
   if (bookingType === "reserve" && !sessionUserId) {
     return sendError(
       res,
@@ -84,13 +91,12 @@ export async function createBooking(req, res) {
     );
   }
 
-  // Guest Buy Now requires the reservation email.
+  // Guest Buy Now requires a valid email.
+  const normalizedCustomerEmail = normalizeEmail(customerEmail);
+
   if (
     !sessionUserId &&
-    (
-      typeof customerEmail !== "string" ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail.trim())
-    )
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedCustomerEmail)
   ) {
     return sendError(
       res,
@@ -102,12 +108,13 @@ export async function createBooking(req, res) {
   const client = await pool.connect();
 
   let transactionStarted = false;
+  let clientReleased = false;
 
   try {
     await client.query("BEGIN");
     transactionStarted = true;
 
-    // 1. Lock reservation.
+    // 5. Lock reservation.
     const reservationResult = await client.query(
       `SELECT
           reservation_id,
@@ -125,18 +132,22 @@ export async function createBooking(req, res) {
 
     if (reservationResult.rows.length === 0) {
       await client.query("ROLLBACK");
+      transactionStarted = false;
+
       return sendError(res, 404, "Reservation not found");
     }
 
     const reservation = reservationResult.rows[0];
 
-    // Check reservation ownership.
+    // 6. Check reservation ownership.
     if (
       reservation.user_id == null
         ? sessionUserId != null
         : Number(reservation.user_id) !== Number(sessionUserId)
     ) {
       await client.query("ROLLBACK");
+      transactionStarted = false;
+
       return sendError(
         res,
         403,
@@ -144,12 +155,15 @@ export async function createBooking(req, res) {
       );
     }
 
-    // For guests, verify the email matches the reservation.
+    // 7. Verify guest email.
     if (
       !sessionUserId &&
-      reservation.customer_email !== customerEmail.trim().toLowerCase()
+      normalizeEmail(reservation.customer_email) !==
+        normalizedCustomerEmail
     ) {
       await client.query("ROLLBACK");
+      transactionStarted = false;
+
       return sendError(
         res,
         403,
@@ -157,11 +171,14 @@ export async function createBooking(req, res) {
       );
     }
 
+    // 8. Check reservation status and expiry.
     if (
       reservation.status !== "active" ||
       !reservation.is_valid
     ) {
       await client.query("ROLLBACK");
+      transactionStarted = false;
+
       return sendError(
         res,
         410,
@@ -169,7 +186,7 @@ export async function createBooking(req, res) {
       );
     }
 
-    // 2. Lock showtime.
+    // 9. Lock showtime and calculate Booking expiry.
     const showtimeResult = await client.query(
       `SELECT
           showtime_id,
@@ -177,16 +194,14 @@ export async function createBooking(req, res) {
           start_time,
           base_price,
           status,
-          (
-            CASE
-              WHEN $2 = 'reserve'
-                THEN start_time - INTERVAL '30 minutes'
-              ELSE LEAST(
-                NOW() + INTERVAL '10 minutes',
-                start_time
-              )
-            END
-          ) AS booking_expires_at,
+          CASE
+            WHEN $2 = 'reserve'
+              THEN start_time - INTERVAL '30 minutes'
+            ELSE LEAST(
+              NOW() + INTERVAL '35 minutes',
+              start_time
+            )
+          END AS booking_expires_at,
           NOW() AS database_time
        FROM showtimes
        WHERE showtime_id = $1
@@ -196,6 +211,8 @@ export async function createBooking(req, res) {
 
     if (showtimeResult.rows.length === 0) {
       await client.query("ROLLBACK");
+      transactionStarted = false;
+
       return sendError(res, 404, "Showtime not found");
     }
 
@@ -203,6 +220,8 @@ export async function createBooking(req, res) {
 
     if (showtime.status !== "scheduled") {
       await client.query("ROLLBACK");
+      transactionStarted = false;
+
       return sendError(
         res,
         400,
@@ -215,6 +234,8 @@ export async function createBooking(req, res) {
       new Date(showtime.database_time)
     ) {
       await client.query("ROLLBACK");
+      transactionStarted = false;
+
       return sendError(
         res,
         400,
@@ -227,6 +248,8 @@ export async function createBooking(req, res) {
       new Date(showtime.database_time)
     ) {
       await client.query("ROLLBACK");
+      transactionStarted = false;
+
       return sendError(
         res,
         400,
@@ -234,7 +257,7 @@ export async function createBooking(req, res) {
       );
     }
 
-    // 3. Lock the user's row to serialize Loyalty calculations.
+    // 10. Lock user row to serialize Loyalty calculations.
     if (sessionUserId) {
       const userResult = await client.query(
         `SELECT user_id
@@ -246,11 +269,13 @@ export async function createBooking(req, res) {
 
       if (userResult.rows.length === 0) {
         await client.query("ROLLBACK");
+        transactionStarted = false;
+
         return sendError(res, 401, "User not found");
       }
     }
 
-    // 4. Get all seats currently held by this reservation.
+    // 11. Get seats held by this reservation.
     const allocationsResult = await client.query(
       `SELECT
           allocation_id,
@@ -275,12 +300,15 @@ export async function createBooking(req, res) {
       (item) => item.wheelchair_space_id != null
     );
 
-    // Verify ticket quantities match held allocations.
+    // 12. Verify ticket quantities against held allocations.
     if (
       normalSeats.length !== regular + child ||
-      wheelchairSpaces.length !== wheelchair
+      wheelchairSpaces.length !== wheelchair ||
+      allocations.length !== totalTickets
     ) {
       await client.query("ROLLBACK");
+      transactionStarted = false;
+
       return sendError(
         res,
         400,
@@ -288,17 +316,7 @@ export async function createBooking(req, res) {
       );
     }
 
-    if (allocations.length !== totalTickets) {
-      await client.query("ROLLBACK");
-      return sendError(
-        res,
-        400,
-        "Reservation seat allocation is invalid"
-      );
-    }
-
-    // 5. Assign ticket types deterministically.
-    // Normal seats are ordered by allocation_id.
+    // 13. Assign ticket types deterministically.
     const ticketAllocations = [];
 
     let normalIndex = 0;
@@ -324,8 +342,18 @@ export async function createBooking(req, res) {
       });
     }
 
-    // 6. Calculate base ticket prices.
+    // 14. Calculate ticket prices.
+    // Regular: 100%
+    // Child: 50%
+    // Wheelchair: 100%
     const basePriceCents = toCents(showtime.base_price);
+
+    if (
+      !Number.isSafeInteger(basePriceCents) ||
+      basePriceCents < 0
+    ) {
+      throw new Error("INVALID_SHOWTIME_BASE_PRICE");
+    }
 
     for (const allocation of ticketAllocations) {
       const isChild = allocation.ticketType === "child";
@@ -346,7 +374,9 @@ export async function createBooking(req, res) {
       }
     }
 
-    // 7. Count previously successful tickets.
+    // 15. Count previously successful tickets.
+    // All ticket types count toward Loyalty.
+    // Only paid and confirmed Bookings are counted.
     let previousCount = 0;
 
     if (sessionUserId) {
@@ -370,11 +400,10 @@ export async function createBooking(req, res) {
         [sessionUserId]
       );
 
-      previousCount = loyaltyResult.rows[0].total;
+      previousCount = Number(loyaltyResult.rows[0].total);
     }
 
-    // 8. Create Booking first.
-    // The total is updated after Loyalty claims are processed.
+    // 16. Create Booking.
     const bookingResult = await client.query(
       `INSERT INTO bookings (
           reservation_id,
@@ -400,8 +429,8 @@ export async function createBooking(req, res) {
 
     const booking = bookingResult.rows[0];
 
-    // 9. Claim Loyalty milestones.
-    // Only registered customers are eligible.
+    // 17. Claim Loyalty milestones.
+    // Registered customers only.
     let successfulClaims = [];
 
     if (sessionUserId) {
@@ -438,23 +467,26 @@ export async function createBooking(req, res) {
       }
     }
 
-    // 10. Apply Loyalty discount to the most expensive tickets.
-    // Child discount is applied before Loyalty discount.
+    // 18. Apply Loyalty discount.
+    // Child discount is applied first.
+    // Loyalty discount is applied to the most expensive tickets.
     const loyaltyDiscountCount = successfulClaims.length;
 
     if (loyaltyDiscountCount > 0) {
-      const eligibleAllocations = [...ticketAllocations]
-        .sort((a, b) => {
+      const eligibleAllocations = [...ticketAllocations].sort(
+        (a, b) => {
           if (b.finalPriceCents !== a.finalPriceCents) {
             return b.finalPriceCents - a.finalPriceCents;
           }
 
           return a.allocation_id - b.allocation_id;
-        });
+        }
+      );
 
       for (
         let i = 0;
-        i < loyaltyDiscountCount && i < eligibleAllocations.length;
+        i < loyaltyDiscountCount &&
+        i < eligibleAllocations.length;
         i++
       ) {
         const allocation = eligibleAllocations[i];
@@ -466,12 +498,12 @@ export async function createBooking(req, res) {
         allocation.policies.push({
           type: "loyalty_discount",
           percentage: 50,
-          milestone: successfulClaims[i].milestone_number,
+          milestone: Number(successfulClaims[i].milestone_number),
         });
       }
     }
 
-    // 11. Calculate final Booking total.
+    // 19. Calculate final Booking total.
     const totalAmountCents = ticketAllocations.reduce(
       (sum, allocation) =>
         sum + allocation.finalPriceCents,
@@ -480,9 +512,9 @@ export async function createBooking(req, res) {
 
     const totalAmount = fromCents(totalAmountCents);
 
-    // 12. Save ticket prices and transfer allocations to Booking.
+    // 20. Transfer allocations from Reservation to Booking.
     for (const allocation of ticketAllocations) {
-      const result = await client.query(
+      const updateResult = await client.query(
         `UPDATE showtime_seat_allocations
          SET status = 'booked',
              booking_id = $1,
@@ -492,6 +524,7 @@ export async function createBooking(req, res) {
              expires_at = NULL
          WHERE allocation_id = $5
            AND reservation_id = $6
+           AND showtime_id = $7
            AND status = 'held'
          RETURNING allocation_id`,
         [
@@ -501,15 +534,16 @@ export async function createBooking(req, res) {
           JSON.stringify(allocation.policies),
           allocation.allocation_id,
           reservationId,
+          reservation.showtime_id,
         ]
       );
 
-      if (result.rows.length === 0) {
+      if (updateResult.rows.length === 0) {
         throw new Error("ALLOCATION_TRANSFER_FAILED");
       }
     }
 
-    // 13. Update Booking total.
+    // 21. Update Booking total.
     await client.query(
       `UPDATE bookings
        SET total_amount = $1,
@@ -518,7 +552,7 @@ export async function createBooking(req, res) {
       [totalAmount, booking.booking_id]
     );
 
-    // 14. Create Payment.
+    // 22. Create Payment.
     const paymentMethod =
       bookingType === "reserve" ? "at_counter" : "online";
 
@@ -537,7 +571,7 @@ export async function createBooking(req, res) {
       ]
     );
 
-    // 15. Convert Reservation.
+    // 23. Convert Reservation.
     await client.query(
       `UPDATE reservations
        SET status = 'converted',
@@ -546,24 +580,65 @@ export async function createBooking(req, res) {
       [paymentMethod, reservationId]
     );
 
+    // 24. Commit database transaction.
     await client.query("COMMIT");
     transactionStarted = false;
 
+    // Release DB connection before making Stripe API request.
+    client.release();
+    clientReleased = true;
+
+    // 25. Create Stripe Checkout Session for Buy Now.
+    let checkoutUrl = null;
+    let checkoutError = null;
+
+    if (bookingType === "buy_now") {
+      try {
+        const checkout = await createCheckoutSessionForBooking(
+          booking.booking_id
+        );
+
+        checkoutUrl = checkout.checkoutUrl;
+      } catch (error) {
+        // Booking has already been committed.
+        // Do not pretend that Booking creation failed.
+        console.error(
+          "Stripe Checkout Session creation failed:",
+          error
+        );
+
+        checkoutError =
+          "Booking was created, but the payment session could not be started.";
+      }
+    }
+
+    // 26. Return Booking result.
     return res.status(201).json({
       success: true,
-      message: "Booking created successfully",
+      message: checkoutError
+        ? checkoutError
+        : "Booking created successfully",
+
       data: {
         bookingId: booking.booking_id,
         bookingCode: booking.booking_code,
         reservationId,
         bookingType,
+
         status: "pending",
         paymentStatus: "unpaid",
         paymentMethod,
+
         totalAmount,
         currency: "EUR",
+
         expiresAt: booking.expires_at,
+
+        checkoutUrl,
+        checkoutError,
+
         ticketCount: totalTickets,
+
         tickets: ticketAllocations.map((allocation) => ({
           allocationId: allocation.allocation_id,
           ticketType: allocation.ticketType,
@@ -571,19 +646,26 @@ export async function createBooking(req, res) {
           finalPrice: fromCents(allocation.finalPriceCents),
           appliedPolicies: allocation.policies,
         })),
+
         loyalty: {
           previousTicketCount: previousCount,
           currentTicketCount: totalTickets,
+
           claimedMilestones: successfulClaims.map(
-            (claim) => claim.milestone_number
+            (claim) => Number(claim.milestone_number)
           ),
+
           discountedTicketCount: loyaltyDiscountCount,
         },
       },
     });
   } catch (error) {
     if (transactionStarted) {
-      await client.query("ROLLBACK");
+      try {
+        await client.query("ROLLBACK");
+      } catch (rollbackError) {
+        console.error("Booking transaction rollback failed:", rollbackError);
+      }
     }
 
     console.error("Error creating booking:", error);
@@ -604,12 +686,22 @@ export async function createBooking(req, res) {
       );
     }
 
+    if (error.message === "INVALID_SHOWTIME_BASE_PRICE") {
+      return sendError(
+        res,
+        400,
+        "Invalid showtime ticket price"
+      );
+    }
+
     return sendError(
       res,
       500,
       "Failed to create booking"
     );
   } finally {
-    client.release();
+    if (!clientReleased) {
+      client.release();
+    }
   }
 }

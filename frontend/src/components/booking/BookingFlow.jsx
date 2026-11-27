@@ -364,20 +364,30 @@ function BookingFlow({
 
   // Create a Booking from the current Reservation.
   async function handleCreateBooking(bookingType) {
+    // Prevent duplicate Booking requests.
     if (bookingRequestLock.current || bookingLoading) {
       return;
     }
 
+    // Validate Reservation.
     if (!reservation?.reservationId) {
       setError("Reservation could not be found. Please try again.");
       return;
     }
 
+    // Validate ticket selection.
     if (!ticketSelection?.tickets) {
       setError("Ticket selection could not be found.");
       return;
     }
 
+    // Validate Booking type.
+    if (!["buy_now", "reserve"].includes(bookingType)) {
+      setError("Invalid booking type.");
+      return;
+    }
+
+    // Only registered customers can reserve tickets.
     if (
       bookingType === "reserve" &&
       customerType !== "registered"
@@ -391,6 +401,7 @@ function BookingFlow({
     setError("");
 
     try {
+      // Create Booking through Backend.
       const result = await createBooking({
         reservationId: reservation.reservationId,
         bookingType,
@@ -403,17 +414,53 @@ function BookingFlow({
         },
       });
 
+      // Validate Backend response.
       if (!result?.success || !result?.data) {
         throw new Error(
           result?.message || "Could not create your booking."
         );
       }
 
-      setBooking(result.data);
+      const bookingData = result.data;
 
-      // Step 5 is the Booking/Payment step.
+      // Save Booking information.
+      setBooking(bookingData);
+
+      // BUY NOW: Redirect to Stripe Checkout.
+      if (bookingType === "buy_now") {
+        const checkoutUrl = bookingData.checkoutUrl;
+
+        if (!checkoutUrl) {
+          setError(
+            bookingData.checkoutError ||
+              "Booking was created, but Stripe Checkout could not be started. Please contact support."
+          );
+
+          goToStep("booking-created", 5);
+          return;
+        }
+
+        // Validate Stripe Checkout URL before redirecting.
+        const checkoutUrlObject = new URL(checkoutUrl);
+
+        if (
+          checkoutUrlObject.protocol !== "https:" ||
+          checkoutUrlObject.hostname !== "checkout.stripe.com"
+        ) {
+          throw new Error("Invalid Stripe Checkout URL.");
+        }
+
+        // Redirect customer to Stripe hosted Checkout.
+        window.location.assign(checkoutUrl);
+        return;
+      }
+
+      // RESERVE: Payment will be made at the cinema counter.
       goToStep("booking-created", 5);
+
     } catch (err) {
+      console.error("Create Booking error:", err);
+
       setError(
         err.message || "Failed to create booking. Please try again."
       );
