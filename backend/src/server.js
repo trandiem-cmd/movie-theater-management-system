@@ -17,7 +17,7 @@ import reservationRoutes from "./routes/reservation.routes.js";
 import pricingRoutes from "./routes/pricing.routes.js";
 import bookingRoutes from "./routes/booking.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
-
+import paymentVerificationRoutes from "./routes/payment.routes.js";
 
 dotenv.config();
 

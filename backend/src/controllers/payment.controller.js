@@ -558,3 +558,66 @@ export async function handleStripeWebhook(req, res) {
     client.release();
   }
 }
+
+// GET /api/payments/verify-session?session_id=...
+export async function verifyCheckoutSession(req, res) {
+  const sessionId = req.query.session_id;
+
+  if (
+    typeof sessionId !== "string" ||
+    !sessionId.startsWith("cs_")
+  ) {
+    return sendError(res, 400, "Invalid Checkout Session ID");
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT
+          p.payment_id,
+          p.payment_status,
+          p.stripe_session_id,
+          b.booking_id,
+          b.booking_code,
+          b.status AS booking_status,
+          b.payment_status AS booking_payment_status,
+          b.total_amount
+       FROM payments p
+       JOIN bookings b
+         ON b.booking_id = p.booking_id
+       WHERE p.stripe_session_id = $1
+       LIMIT 1`,
+      [sessionId]
+    );
+
+    if (result.rows.length === 0) {
+      return sendError(res, 404, "Payment session not found");
+    }
+
+    const payment = result.rows[0];
+
+    return res.json({
+      success: true,
+      data: {
+        paymentStatus: payment.payment_status,
+        bookingStatus: payment.booking_status,
+        booking:
+          payment.payment_status === "success" &&
+          payment.booking_status === "confirmed" &&
+          payment.booking_payment_status === "paid"
+            ? {
+                bookingCode: payment.booking_code,
+                totalAmount: Number(payment.total_amount),
+              }
+            : null,
+      },
+    });
+  } catch (error) {
+    console.error("Payment verification error:", error);
+
+    return sendError(
+      res,
+      500,
+      "Unable to verify payment"
+    );
+  }
+}

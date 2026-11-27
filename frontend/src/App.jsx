@@ -18,6 +18,8 @@ import MovieDetailPage from "./pages/customer/MovieDetailPage";
 import SeatSelectionPage from "./pages/customer/SeatSelectionPage";
 import SeatManagementPage from "./pages/admin/SeatManagementPage";
 
+import PaymentSuccessPage from "./pages/customer/PaymentSuccessPage";
+import PaymentCancelPage from "./pages/customer/PaymentCancelPage";
 
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
@@ -44,7 +46,15 @@ function App() {
 
 
           <Route path="/theaters" element={<TheaterListPage />} />
+          <Route
+            path="/payment/success"
+            element={<PaymentSuccessPage />}
+          />
 
+          <Route
+            path="/payment/cancel"
+            element={<PaymentCancelPage />}
+          />
           {/* Authentication */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
