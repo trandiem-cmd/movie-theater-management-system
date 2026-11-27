@@ -116,12 +116,14 @@ app.get("/api/showtimes/:id/seats", getShowtimeSeats);
 
 
 app.use('/api/theaters', locationRoutes);
-// Start server
-app.listen(PORT, () => {
-  console.log(`RIO Cinema API listening at http://localhost:${PORT}`);
-});
 // Reservation Management
 app.use("/api/reservations", reservationRoutes);
 
 // Pricing Management
 app.use("/api/pricing", pricingRoutes);
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`RIO Cinema API listening at http://localhost:${PORT}`);
+});
+

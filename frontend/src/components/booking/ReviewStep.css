@@ -68,18 +68,33 @@
 }
 
 .review-back-button {
-  background: #e5e5e5;
-  color: #222;
+  margin-top: 20px;
+  padding: 12px;
+  border: 0;
+  border-radius: 25px;
+  background: #850000;
+  color: white;
+  cursor: pointer;
 }
 
 .review-reserve-button {
-  background: #444;
+  margin-top: 20px;
+  padding: 12px;
+  border: 0;
+  border-radius: 25px;
+  background: #850000;
   color: white;
+  cursor: pointer;
 }
 
 .review-buy-button {
-  background: #c62828;
+  margin-top: 20px;
+  padding: 12px;
+  border: 0;
+  border-radius: 25px;
+  background: #850000;
   color: white;
+  cursor: pointer;
 }
 
 .review-actions button:hover {

@@ -216,7 +216,7 @@ const seconds = remainingSeconds % 60;
           disabled={!canContinue}
           onClick={handleContinue}
         >
-          Continue
+          Continue to riview
         </button>
       </aside>
     </section>

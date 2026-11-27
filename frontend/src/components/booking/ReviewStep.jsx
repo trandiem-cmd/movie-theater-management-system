@@ -47,7 +47,7 @@ function ReviewStep({
         <h3>Selected seats</h3>
 
         <p>
-          <strong>Regular seats:</strong>{" "}
+          <strong>Seats numbers:</strong>{" "}
           {selectedSeats.length > 0
             ? selectedSeats.join(", ")
             : "None"}

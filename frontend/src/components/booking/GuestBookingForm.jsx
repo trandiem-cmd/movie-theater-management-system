@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { login } from "../../api";
+import { useAuth } from "../../context/AuthContext";
 import "./GuestBookingForm.css";
 
 function GuestBookingForm({ onContinue }) {
@@ -9,6 +10,8 @@ function GuestBookingForm({ onContinue }) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const { refreshUser } = useAuth();
 
   async function handleSignIn(event) {
     event.preventDefault();
@@ -24,6 +27,14 @@ function GuestBookingForm({ onContinue }) {
 
       await login(email.trim(), password);
 
+      const currentUser = await refreshUser();
+
+      if (!currentUser) {
+        throw new Error(
+          "Your session could not be loaded. Please try again."
+        );
+      }
+
       onContinue("registered");
     } catch (err) {
       setError(err.message || "Sign in failed. Please try again.");
@@ -36,11 +47,10 @@ function GuestBookingForm({ onContinue }) {
     setError("");
 
     const trimmedEmail = guestEmail.trim();
-
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!trimmedEmail) {
-      setError("Please enter your email address to continue as a guest.");
+      setError("Please enter your email address.");
       return;
     }
 
@@ -54,78 +64,76 @@ function GuestBookingForm({ onContinue }) {
 
   return (
     <section className="guest-booking-form">
-      <h1>Sign in</h1>
+      <form onSubmit={handleSignIn} className="signin-form">
 
-      <p>
-        Sign in to your RIO account or continue as a guest.
-      </p>
-
-      <form onSubmit={handleSignIn}>
-        <div>
-          <label htmlFor="booking-email">Email address</label>
+        <div className="booking-input-row">
+          <label htmlFor="booking-email">Email</label>
           <input
             id="booking-email"
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            placeholder="Enter your email"
             required
+            disabled={loading}
           />
         </div>
 
-        <div>
+        <div className="booking-input-row">
           <label htmlFor="booking-password">Password</label>
           <input
             id="booking-password"
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="Enter your password"
             required
+            disabled={loading}
           />
         </div>
 
-        <p>
-          <Link to="/forgot-password">Forgot password?</Link>
-        </p>
-
-        {error && <p role="alert">{error}</p>}
-
-        <button type="submit" disabled={loading}>
+        <button
+          type="submit"
+          className="signin-button"
+          disabled={loading}
+        >
           {loading ? "Signing in..." : "Sign in"}
         </button>
+
       </form>
 
-      <div className="guest-booking-divider">
-        <span>OR</span>
+      <div className="booking-register">
+        <span>New to RIO ?</span>
+        <Link to="/register">Create an account</Link>
       </div>
 
-      <div className="guest-email-field">
-        <label htmlFor="guest-booking-email">
-          Email address for guest booking
-        </label>
+      <div className="guest-booking-divider">
+        OR
+      </div>
 
+      <div className="booking-input-row guest-email-field">
+        <label htmlFor="guest-booking-email">Email</label>
         <input
           id="guest-booking-email"
           type="email"
           value={guestEmail}
           onChange={(event) => setGuestEmail(event.target.value)}
-          placeholder="Enter your email address"
           disabled={loading}
         />
       </div>
 
+      {error && (
+        <p className="booking-form-error" role="alert">
+          {error}
+        </p>
+      )}
+
       <button
         type="button"
+        className="guest-continue-button"
         onClick={handleGuestContinue}
         disabled={loading}
       >
-        Continue as Guest
+        Continue as guest
       </button>
-
-      <p>
-        Don't have an account? <Link to="/register">Register</Link>
-      </p>
     </section>
   );
 }
