@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-
+import "./PaymentSuccessPage.css";
 function PaymentSuccessPage() {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
@@ -88,7 +88,7 @@ function PaymentSuccessPage() {
 
   if (status === "checking") {
     return (
-      <main className="payment-result">
+      <main className="payment-resul payment-success-page payment-result--checking">
         <h1>Verifying Your Payment</h1>
         <p>
           Please wait while we confirm your payment and booking.
@@ -99,7 +99,7 @@ function PaymentSuccessPage() {
 
   if (status === "pending") {
     return (
-      <main className="payment-result">
+      <main className="payment-result payment-success-page payment-result--pending">
         <h1>Payment Confirmation Pending</h1>
 
         <p>
@@ -119,7 +119,7 @@ function PaymentSuccessPage() {
 
   if (status === "error") {
     return (
-      <main className="payment-result">
+      <main className="payment-result payment-success-page payment-result--error">
         <h1>Unable to Verify Payment</h1>
 
         <p>{error}</p>
@@ -135,7 +135,7 @@ function PaymentSuccessPage() {
   }
 
   return (
-    <main className="payment-result">
+    <main className="payment-result payment-success-page payment-result--success">
       <h1>Payment Successful!</h1>
 
       <p>

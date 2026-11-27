@@ -1,12 +1,13 @@
 
 import { Link, useSearchParams } from "react-router-dom";
+import "./PaymentCancelPage.css";
 
 function PaymentCancelPage() {
   const [searchParams] = useSearchParams();
   const bookingId = searchParams.get("booking_id");
 
   return (
-    <main className="payment-result">
+    <main className="payment-result payment-cancel-page">
       <h1>Payment Cancelled</h1>
 
       <p>
